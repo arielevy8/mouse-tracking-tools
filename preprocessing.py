@@ -37,7 +37,7 @@ class TrajectoryProcessing(object):
 
     def normalize_time_points(self):
         """
-        this function uses linear interpolation to normalize all of the trajectories to 101 time points from start to finish.
+        This function uses linear interpolation to normalize all of the trajectories to 101 time points from start to finish.
         """ 
         #innitialize matrix
         xnew = np.empty([101,self.NUM_TRIALS]) 
@@ -58,6 +58,28 @@ class TrajectoryProcessing(object):
         self.x = xnew
         self.y = ynew
 
+    def rescale(self):
+        """
+        This function rescales the coordiantes space so that the continue button is in [0,0]
+        and the right and left targets are in [1,1] and [-1,1] respectively
+        """
+        left_target_x, right_target_x = 445,975
+        self.x -= ((left_target_x+right_target_x)/2)
+        self.x  = self.x / ((right_target_x-left_target_x)/2)
+        continue_y, targets_y = 620, 335
+        self.y -=620
+        self.y = -self.y / ((continue_y-targets_y))
+
+    def remap_trajectories(self):
+        """
+        This function remaps all of the trajectories to the right.
+        IMPORTANT: The function will only work if you apply the rescale() function first!
+        """
+        for i in range(self.NUM_TRIALS):
+            if self.x[100,i] < 0: ## i.e., if the trajectory ends in the left target
+                self.x[:,i] = -self.x[:,i]
+
+
     def plot_by_conflict(self):
         ax = plt.figure()
         ax = ax.add_subplot(1,1,1)
@@ -67,52 +89,77 @@ class TrajectoryProcessing(object):
         self.x_avo = self.x[:,self.avo_ind]
         self.y_app = self.y[:,self.app_ind]
         self.y_avo = self.y[:,self.avo_ind]
-        ax.plot(self.x_app[:,0:42],-self.y_app[:,0:42],'--go',label = 'APP-APP',markersize = 5)
-        ax.plot(self.x_avo[:,0:42],-self.y_avo[:,0:42],'--ro',label = 'AVO-AVO',markersize = 5)
+        ax.plot(self.x_app[:,0:42],self.y_app[:,0:42],'--go',label = 'APP-APP',markersize = 5)
+        ax.plot(self.x_avo[:,0:42],self.y_avo[:,0:42],'--ro',label = 'AVO-AVO',markersize = 5)
         handles, labels = ax.get_legend_handles_labels()
         temp = {k:v for k,v in zip(labels, handles)}
         ax.legend(temp.values(), temp.keys(), loc='best')
         plt.show()
                 
 
-        
+    
 
     def x_flips(self):
+        """
+        This function calculates number of x flips trial by trial and save it as a variable 'flips' of the class
+        """
+        self.flips = np.empty(self.NUM_TRIALS)
+        for sub in  range (self.NUM_TRIALS):
+            bigger, smaller = False, False
+            x_count, y_count = 0, 0
+            last_i = 0
+            for i in range(1,101):
+                if self.x[last_i,sub] >= self.x[i,sub]:
+                    last_i += 1
+                    if not bigger:
+                        bigger = True
+                        smaller = False
+                        x_count += 1
+                    else:
+                        continue
+                if self.x[last_i,sub] < self.x[i,sub]:
+                    last_i += 1
+                    if not smaller:
+                        bigger = False
+                        smaller = True
+                        x_count += 1
+                    else:
+                        continue
+            self.flips[sub] = x_count
+
+
+    def AUC (self):
+        """
+        TO DO: this function calculates all area under the curve for the 
+        """
         pass
 
+    def max_deviation(self):
+        """
+
+        """
+
+
     
 
 
-
-
-
-
-
-    
-
-  
-    
-
-        
 
 
 
 path = r"C:\Users\ariel\Desktop\mayacheckmayatest.csv"
 check = TrajectoryProcessing(path)
 check.normalize_time_points()
+check.rescale()
+check.remap_trajectories()
+print(check.y[100,:])
+check.x_flips()
+print (check.flips)
 check.plot_by_conflict()
-plt.plot(check.x[:,0:42],-check.y[:,0:42],'--o')
-plt.xlabel('X cordinate')
-plt.ylabel('Y cordinate')
-plt.show()
+# for sub in range (check.NUM_TRIALS):
+#     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
+#     plt.show()
 
-
-
-
-
-# fx = interpolate.interp1d(range(check.x.shape[0]),np.transpose(check.x))
-# fy = interpolate.interp1d(range(check.y.shape[0]),np.transpose(check.y))
-# xnew = fx(np.linspace(0,check.x.shape[0]-1,101))
-# ynew = fy(np.linspace (0,check.y.shape[0]-1,101))
-# plt.plot(np.transpose(xnew),-np.transpose(ynew),'--o')
+# plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
+# plt.xlabel('X cordinate')
+# plt.ylabel('Y cordinate')
 # plt.show()
