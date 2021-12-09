@@ -4,6 +4,7 @@ from numpy.core.fromnumeric import shape
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import interpolate
+import os
 
 
 class TrajectoryProcessing(object):
@@ -24,13 +25,13 @@ class TrajectoryProcessing(object):
         self.x = self.x.str.split(',', expand=True)
         self.x = self.x.reset_index(drop=True)
         self.x = self.x.to_numpy() #convert to numpy matrix for future processing
-        self.x = self.x.astype(np.float)#convert type from strings to floats
+        self.x = self.x.astype(np.float64)#convert type from strings to floats
         self.x = np.transpose(self.x)#transpose for easier processing (now the matrix size is NUM_TIMEPOINTS*NUM_TRIALS)
 
         self.y = self.y.str.split(',', expand=True)
         self.y = self.y.reset_index(drop=True)
         self.y = self.y.to_numpy()
-        self.y = self.y.astype(np.float)
+        self.y = self.y.astype(np.float64)
         self.y = np.transpose(self.y)
         #self.y = self.y[self.NUM_PRACTICE_TRIALS:,] 
         
@@ -63,11 +64,16 @@ class TrajectoryProcessing(object):
         This function rescales the coordiantes space so that the continue button is in [0,0]
         and the right and left targets are in [1,1] and [-1,1] respectively
         """
-        left_target_x, right_target_x = 445,975
-        self.x -= ((left_target_x+right_target_x)/2)
-        self.x  = self.x / ((right_target_x-left_target_x)/2)
-        continue_y, targets_y = 620, 335
-        self.y -=620
+        #left_target_x, right_target_x = 445,975
+        continue_x = np.mean(self.x[0,:])#calculating the x cordinates for the continue button
+        left_subset = self.x[:,self.x[100,:]<continue_x] #subsetting all trials where the left option is chosen
+        right_subset = self.x[:,self.x[100,:]>continue_x]
+        right_x, left_x = np.mean(right_subset[-1,:]),np.mean(left_subset[-1,:])#calculating the x cordinates for the choices
+        self.x -= continue_x #center x coordinates
+        self.x  = self.x / ((right_x-left_x)/2) #rescale x coordinates
+        continue_y =  np.mean(self.y[0,:])
+        targets_y = np.mean(self.y[100,:])
+        self.y -=continue_y
         self.y = -self.y / ((continue_y-targets_y))
 
     def remap_trajectories(self):
@@ -103,7 +109,7 @@ class TrajectoryProcessing(object):
         """
         This function calculates number of x flips trial by trial and save it as a variable 'flips' of the class
         """
-        self.flips = np.empty(self.NUM_TRIALS)
+        self.flips = []
         for sub in  range (self.NUM_TRIALS):
             bigger, smaller = False, False
             x_count, y_count = 0, 0
@@ -125,7 +131,7 @@ class TrajectoryProcessing(object):
                         x_count += 1
                     else:
                         continue
-            self.flips[sub] = x_count
+            self.flips.append(x_count)
 
 
     def AUC (self):
@@ -138,28 +144,60 @@ class TrajectoryProcessing(object):
         """
 
         """
+        pass
+    def calculate_all_measures(self):
+        """
+        This function calculates the measures (e,g. x flips, max deviation...)
+        and saves each measure as a column in the data frame.
+        """
+        self.x_flips()
+        self.df['flips'] = self.flips
+        ##TO DO: add additional measures after writing the code for them
+        
+
 
 
     
+def process_across_subjects(directory):
+    """
+    This function gets a directory and apply the functions in the above class on all of
+    the subjects files in the directory.
+    It also creates a unified CSV file of all subjects and saves it in the directory
+    """
+    df_list = []
+    files = os.listdir(directory)
+    for sub in range(len(files)):
+        if files[sub][0] == '$':
+            cur_class = TrajectoryProcessing(directory + "\\" + files[sub])
+            cur_class.normalize_time_points()
+            cur_class.rescale()
+            cur_class.remap_trajectories()
+            cur_class.calculate_all_measures()
+            cur_class.df['subject_id'] = sub+1
+            df_list.append(cur_class.df)
+    big_df = pd.concat(df_list)
+    big_df.to_csv(directory+'\\all_subjects.csv')
+        
 
 
+path = r"C:\Users\ariel\Desktop\innitial_data"
 
+process_across_subjects(path)
 
+# check = TrajectoryProcessing(path)
+# check.normalize_time_points()
+# check.rescale()
+# check.remap_trajectories()
+# #print(check.y[100,:])
+# check.x_flips()
+# print (check.flips)
+# check.plot_by_conflict()
+# check.calculate_all_measures()
+# # for sub in range (check.NUM_TRIALS):
+# #     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
+# #     plt.show()
 
-path = r"C:\Users\ariel\Desktop\mayacheckmayatest.csv"
-check = TrajectoryProcessing(path)
-check.normalize_time_points()
-check.rescale()
-check.remap_trajectories()
-print(check.y[100,:])
-check.x_flips()
-print (check.flips)
-check.plot_by_conflict()
-# for sub in range (check.NUM_TRIALS):
-#     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
-#     plt.show()
-
-# plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
+# # plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
 # plt.xlabel('X cordinate')
 # plt.ylabel('Y cordinate')
 # plt.show()
