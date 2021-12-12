@@ -15,6 +15,7 @@ class TrajectoryProcessing(object):
     def __init__(self,path):
         self.NUM_PRACTICE_TRIALS = 4
         self.NUM_TRIALS = 42
+        self.NUM_TIMEPOINTS = 101
         self.df = pd.read_csv (path,index_col=None, header=0) 
         self.df = self.df.dropna(subset = ["x_cord"]) #read only lines with mouse tracking data
         self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,] #drop practice trials
@@ -65,16 +66,16 @@ class TrajectoryProcessing(object):
         and the right and left targets are in [1,1] and [-1,1] respectively
         """
         #left_target_x, right_target_x = 445,975
-        continue_x = np.mean(self.x[0,:])#calculating the x cordinates for the continue button
-        left_subset = self.x[:,self.x[100,:]<continue_x] #subsetting all trials where the left option is chosen
-        right_subset = self.x[:,self.x[100,:]>continue_x]
-        right_x, left_x = np.mean(right_subset[-1,:]),np.mean(left_subset[-1,:])#calculating the x cordinates for the choices
-        self.x -= continue_x #center x coordinates
-        self.x  = self.x / ((right_x-left_x)/2) #rescale x coordinates
-        continue_y =  np.mean(self.y[0,:])
-        targets_y = np.mean(self.y[100,:])
-        self.y -=continue_y
-        self.y = -self.y / ((continue_y-targets_y))
+        self.continue_x = np.mean(self.x[0,:])#calculating the x cordinates for the continue button
+        left_subset = self.x[:,self.x[100,:]<self.continue_x] #subsetting all trials where the left option is chosen
+        right_subset = self.x[:,self.x[100,:]>self.continue_x]
+        self.right_x, self.left_x = np.mean(right_subset[-1,:]),np.mean(left_subset[-1,:])#calculating the x cordinates for the choices
+        self.x -= self.continue_x #center x coordinates
+        self.x  = self.x / ((self.right_x-self.left_x)/2) #rescale x coordinates
+        self.continue_y =  np.mean(self.y[0,:])
+        self.targets_y = np.mean(self.y[100,:])
+        self.y -=self.continue_y
+        self.y = -self.y / ((self.continue_y-self.targets_y))
 
     def remap_trajectories(self):
         """
@@ -115,12 +116,13 @@ class TrajectoryProcessing(object):
             x_count, y_count = 0, 0
             last_i = 0
             for i in range(1,101):
-                if self.x[last_i,sub] >= self.x[i,sub]:
+                if self.x[last_i,sub] > self.x[i,sub]:
                     last_i += 1
                     if not bigger:
                         bigger = True
                         smaller = False
-                        x_count += 1
+                        if i != 1:
+                            x_count += 1
                     else:
                         continue
                 if self.x[last_i,sub] < self.x[i,sub]:
@@ -128,7 +130,8 @@ class TrajectoryProcessing(object):
                     if not smaller:
                         bigger = False
                         smaller = True
-                        x_count += 1
+                        if i != 1:
+                            x_count += 1
                     else:
                         continue
             self.flips.append(x_count)
@@ -140,11 +143,32 @@ class TrajectoryProcessing(object):
         """
         pass
 
-    def max_deviation(self):
+    def get_max_deviation(self):
         """
+        This function calculates the maximal deviation from the actual trajectory to a 
+        straight line connecting the starting position and the target.
+        IMPORTANT: this function will only work if you apply the rescale and remap functions first.
+        """
+        self.max_deviations = []
+        line_x, line_y = np.linspace(0,1,100),np.linspace(0,1,100)
+        self.line = np.column_stack((line_x, line_y))
+        # plt.plot (line[:,0],line[:,1])
+        # plt.show()
+        points = np.empty([2,self.NUM_TRIALS])
+        for i in range (self.NUM_TRIALS):
+            distances =[]
+            for j in range (self.NUM_TIMEPOINTS):
+                cur_point = np.array([self.x[j,i],self.y[j,i]])
+                norm = np.linalg.norm(self.line-cur_point,axis = 1)
+                cur_distance = np.min(norm)
+                distances.append (cur_distance)
+            self.max_deviations.append(max(distances))
 
-        """
-        pass
+
+
+
+        
+
     def calculate_all_measures(self):
         """
         This function calculates the measures (e,g. x flips, max deviation...)
@@ -152,6 +176,8 @@ class TrajectoryProcessing(object):
         """
         self.x_flips()
         self.df['flips'] = self.flips
+        self.get_max_deviation()
+        self.df['max_deviation'] = self.max_deviations
         ##TO DO: add additional measures after writing the code for them
         
 
@@ -180,9 +206,9 @@ def process_across_subjects(directory):
         
 
 
-path = r"C:\Users\ariel\Desktop\innitial_data"
-
-process_across_subjects(path)
+path = r"C:\Users\ariel\Desktop\innitial_data\$6129178185eec14208a3e247.csv"
+directory = r"C:\Users\ariel\Desktop\innitial_data"
+process_across_subjects(directory)
 
 # check = TrajectoryProcessing(path)
 # check.normalize_time_points()
@@ -191,13 +217,21 @@ process_across_subjects(path)
 # #print(check.y[100,:])
 # check.x_flips()
 # print (check.flips)
-# check.plot_by_conflict()
-# check.calculate_all_measures()
-# # for sub in range (check.NUM_TRIALS):
-# #     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
-# #     plt.show()
+# #check.plot_by_conflict()
+# check.get_max_deviation()
+# print(check.max_deviations)
+# # check.calculate_all_measures()
+# for sub in range (check.NUM_TRIALS):
+#     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
+#     plt.plot (check.line[:,0],check.line[:,1])
+#     plt.xlim(-1,1)
+#     print(check.x[:,sub])
+#     print(check.flips[sub])
+#     print(check.max_deviations[sub])
+#     plt.show()
 
 # # plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
+
 # plt.xlabel('X cordinate')
 # plt.ylabel('Y cordinate')
 # plt.show()
