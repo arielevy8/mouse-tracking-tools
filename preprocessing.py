@@ -106,17 +106,17 @@ class TrajectoryProcessing(object):
 
     
 
-    def x_flips(self):
+    def get_x_flips(self):
         """
         This function calculates number of x flips trial by trial and save it as a variable 'flips' of the class
         """
         self.flips = []
-        for sub in  range (self.NUM_TRIALS):
+        for trial in  range (self.NUM_TRIALS):
             bigger, smaller = False, False
             x_count, y_count = 0, 0
             last_i = 0
-            for i in range(1,101):
-                if self.x[last_i,sub] > self.x[i,sub]:
+            for i in range(1,self.NUM_TIMEPOINTS):
+                if self.x[last_i,trial] > self.x[i,trial]:
                     last_i += 1
                     if not bigger:
                         bigger = True
@@ -125,7 +125,7 @@ class TrajectoryProcessing(object):
                             x_count += 1
                     else:
                         continue
-                if self.x[last_i,sub] < self.x[i,sub]:
+                if self.x[last_i,trial] < self.x[i,trial]:
                     last_i += 1
                     if not smaller:
                         bigger = False
@@ -135,9 +135,27 @@ class TrajectoryProcessing(object):
                     else:
                         continue
             self.flips.append(x_count)
+    
+    def get_middle_cross(self):
+        """
+        This funcction calculates the number of times the mouse cursor cross the middle of the X-axis
+        """
+        self.middle_crosses = []
+        for trial  in range (self.NUM_TRIALS):
+            crosses = 0
+            last_i = 0
+            for i in range(1,self.NUM_TIMEPOINTS):
+                if (self.x[last_i,trial] > 0 and self.x[i,trial] < 0) or (self.x[last_i,trial] < 0 and self.x[i,trial] > 0):
+                    crosses += 1
+                last_i += 1
+            self.middle_crosses.append(crosses)
 
 
-    def AUC (self):
+
+        
+
+
+    def get_AUC (self):
         """
         TO DO: this function calculates all area under the curve for the 
         """
@@ -154,7 +172,7 @@ class TrajectoryProcessing(object):
         self.line = np.column_stack((line_x, line_y))
         # plt.plot (line[:,0],line[:,1])
         # plt.show()
-        points = np.empty([2,self.NUM_TRIALS])
+        #points = np.empty([2,self.NUM_TRIALS])
         for i in range (self.NUM_TRIALS):
             distances =[]
             for j in range (self.NUM_TIMEPOINTS):
@@ -163,10 +181,6 @@ class TrajectoryProcessing(object):
                 cur_distance = np.min(norm)
                 distances.append (cur_distance)
             self.max_deviations.append(max(distances))
-
-
-
-
         
 
     def calculate_all_measures(self):
@@ -174,10 +188,12 @@ class TrajectoryProcessing(object):
         This function calculates the measures (e,g. x flips, max deviation...)
         and saves each measure as a column in the data frame.
         """
-        self.x_flips()
+        self.get_x_flips()
         self.df['flips'] = self.flips
         self.get_max_deviation()
         self.df['max_deviation'] = self.max_deviations
+        self.get_middle_cross()
+        self.df['middle_crosses'] = self.middle_crosses
         ##TO DO: add additional measures after writing the code for them
         
 
@@ -203,32 +219,36 @@ def process_across_subjects(directory):
             df_list.append(cur_class.df)
     big_df = pd.concat(df_list)
     big_df.to_csv(directory+'\\all_subjects.csv')
+
+
         
 
 
 path = r"C:\Users\ariel\Desktop\innitial_data\$6129178185eec14208a3e247.csv"
-directory = r"C:\Users\ariel\Desktop\innitial_data"
-process_across_subjects(directory)
+# directory = r"C:\Users\ariel\Desktop\innitial_data"
+# process_across_subjects(directory)
 
-# check = TrajectoryProcessing(path)
-# check.normalize_time_points()
-# check.rescale()
-# check.remap_trajectories()
-# #print(check.y[100,:])
-# check.x_flips()
+check = TrajectoryProcessing(path)
+check.normalize_time_points()
+check.rescale()
+check.remap_trajectories()
+#print(check.y[100,:])
+check.get_x_flips()
 # print (check.flips)
-# #check.plot_by_conflict()
-# check.get_max_deviation()
+#check.plot_by_conflict()
+check.get_max_deviation()
+check.get_middle_cross()
 # print(check.max_deviations)
 # # check.calculate_all_measures()
-# for sub in range (check.NUM_TRIALS):
-#     plt.plot(check.x[:,sub],check.y[:,sub],'--o')
-#     plt.plot (check.line[:,0],check.line[:,1])
-#     plt.xlim(-1,1)
-#     print(check.x[:,sub])
-#     print(check.flips[sub])
-#     print(check.max_deviations[sub])
-#     plt.show()
+for sub in range (check.NUM_TRIALS):
+    plt.plot(check.x[:,sub],check.y[:,sub],'--o')
+    plt.plot (check.line[:,0],check.line[:,1])
+    plt.xlim(-1.2,1.2)
+    #print(check.x[:,sub])
+    print(check.flips[sub])
+    print(check.max_deviations[sub])
+    print (check.middle_crosses[sub])
+    plt.show()
 
 # # plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
 
