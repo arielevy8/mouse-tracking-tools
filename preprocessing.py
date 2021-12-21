@@ -102,8 +102,14 @@ class TrajectoryProcessing(object):
         temp = {k:v for k,v in zip(labels, handles)}
         ax.legend(temp.values(), temp.keys(), loc='best')
         plt.show()
-                
 
+    def agg_by_conflict(self):
+        self.app_ind = self.df.index[self.df['Conflict']=='Approach']
+        self.avo_ind = self.df.index[self.df['Conflict']=='Avoidance']
+        self.x_app = self.x[:,self.app_ind]
+        self.x_avo = self.x[:,self.avo_ind]
+        self.y_app = self.y[:,self.app_ind]
+        self.y_avo = self.y[:,self.avo_ind]
     
 
     def get_x_flips(self):
@@ -140,6 +146,8 @@ class TrajectoryProcessing(object):
         """
         This funcction calculates the number of times the mouse cursor cross the middle of the X-axis
         """
+        self.crosses_y_ap= []
+        self.crosses_y_av = []
         self.middle_crosses = []
         for trial  in range (self.NUM_TRIALS):
             crosses = 0
@@ -147,19 +155,37 @@ class TrajectoryProcessing(object):
             for i in range(1,self.NUM_TIMEPOINTS):
                 if (self.x[last_i,trial] > 0 and self.x[i,trial] < 0) or (self.x[last_i,trial] < 0 and self.x[i,trial] > 0):
                     crosses += 1
+                    if (self.df['Conflict'][trial] == 'Approach'):
+                        self.crosses_y_ap.append(self.y[i,trial])#append the y position of the cross for later visualization
+                    elif (self.df['Conflict'][trial] == 'Avoidance'):
+                        self.crosses_y_av.append(self.y[i,trial])
                 last_i += 1
             self.middle_crosses.append(crosses)
 
-
-
-        
-
+    # def create_means (self):
+    #     self.mean_app_x =  se
 
     def get_AUC (self):
         """
-        TO DO: this function calculates all area under the curve for the 
+        This function calculates all area under the curve for the trajectories
         """
-        pass
+        self.AUC =[]
+        #line_x, line_y = np.linspace(0,1,101),np.linspace(0,1,101)
+        #self.line = np.column_stack((line_x, line_y))
+        for i in range(self.NUM_TRIALS):
+            cur_x = self.x[:,i]
+            cur_y = self.y[:,i]
+            line_x, line_y = cur_x,cur_x # create a straight line from (0,0) to (1,1). specifically, using the trajectory x cordinates to enable integration
+            ##possibility - visualize the integrated part
+            # plt.plot(cur_x,cur_y,color = 'r')
+            # plt.plot(line_x,line_y)
+            # plt.fill_between(cur_x,cur_y,line_y,alpha = 0.4)
+            # plt.ylim(0,1.3)
+            # plt.show()
+            cur_integral = np.trapz(cur_y-line_y)
+            print(cur_integral)
+
+
 
     def get_max_deviation(self):
         """
@@ -168,7 +194,7 @@ class TrajectoryProcessing(object):
         IMPORTANT: this function will only work if you apply the rescale and remap functions first.
         """
         self.max_deviations = []
-        line_x, line_y = np.linspace(0,1,100),np.linspace(0,1,100)
+        line_x, line_y = np.linspace(0,1,101),np.linspace(0,1,101)
         self.line = np.column_stack((line_x, line_y))
         # plt.plot (line[:,0],line[:,1])
         # plt.show()
@@ -194,6 +220,7 @@ class TrajectoryProcessing(object):
         self.df['max_deviation'] = self.max_deviations
         self.get_middle_cross()
         self.df['middle_crosses'] = self.middle_crosses
+        self.get_AUC()
         ##TO DO: add additional measures after writing the code for them
         
 
@@ -207,51 +234,103 @@ def process_across_subjects(directory):
     It also creates a unified CSV file of all subjects and saves it in the directory
     """
     df_list = []
+    #innitialuze matrixes of all trajectorues
+    all_x_app = np.empty([101,21,56])
+    all_y_app = np.empty([101,21,56])
+    all_x_avo = np.empty([101,21,56])
+    all_y_avo = np.empty([101,21,56])
+    crosses_y_av = []
+    crosses_y_ap = []
     files = os.listdir(directory)
+    counter = 0
     for sub in range(len(files)):
-        if files[sub][0] == '$':
+        if files[sub] != 'all_subjects.csv' and files[sub][0] != '$':
             cur_class = TrajectoryProcessing(directory + "\\" + files[sub])
+            ###preprocess
             cur_class.normalize_time_points()
             cur_class.rescale()
             cur_class.remap_trajectories()
+            cur_class.agg_by_conflict()
+            #cur_class.plot_by_conflict()
+            ###add cur subject trajecories to the big matrices
+            all_x_avo[:,:,counter] =  cur_class.x_avo
+            all_y_avo[:,:,counter] = cur_class.y_avo
+            all_x_app[:,:,counter] = cur_class.x_app
+            all_y_app[:,:,counter] = cur_class.y_app
+            counter += 1
+
             cur_class.calculate_all_measures()
-            cur_class.df['subject_id'] = sub+1
+            cur_class.df['subject_id'] = counter
             df_list.append(cur_class.df)
+
+            ### visualization of middle crosses
+            # plt.subplot(1,2,1)
+            # plt.title('AV-AV')
+            # plt.scatter(np.zeros(len(cur_class.crosses_y_av)),cur_class.crosses_y_av,color = 'r')
+            # plt.subplot(1,2,2)
+            # plt.title('AP-AP')
+            # plt.scatter(np.zeros(len(cur_class.crosses_y_ap)),cur_class.crosses_y_ap, color = 'g')
+            # plt.show()
+
+            crosses_y_av = crosses_y_av + cur_class.crosses_y_av #concat lists for overall y values of middle crosses.
+            crosses_y_ap = crosses_y_ap + cur_class.crosses_y_ap
     big_df = pd.concat(df_list)
+    ###create mean trajectories
+    mean_x_app = np.mean(all_x_app,axis=(1,2))
+    mean_y_app = np.mean (all_y_app,axis =(1,2))
+    mean_x_avo = np.mean(all_x_avo,axis=(1,2))
+    mean_y_avo = np.mean (all_y_avo,axis =(1,2))
+    
+    ### visualization of middle crosses
+    plt.subplot(1,2,1)
+    plt.title('AV-AV')
+    plt.scatter(np.zeros(len(crosses_y_av)),crosses_y_av,color = 'r',s =0.5)
+    plt.subplot(1,2,2)
+    plt.title('AP-AP')
+    plt.scatter(np.zeros(len(crosses_y_ap)),crosses_y_ap, color = 'g', s = 0.5)
+    plt.show()
+
+    ### visualization of mean trajectories
+    # plt.plot(mean_x_app,mean_y_app,'--go',label = 'AP-AP')
+    # plt.plot(mean_x_avo,mean_y_avo,'--ro',label = 'AV-AV')
+    # plt.legend(fontsize="x-large")
+    # plt.xlim(-1,1.1)
+    # plt.show()
+
     big_df.to_csv(directory+'\\all_subjects.csv')
 
 
         
 
 
-path = r"C:\Users\ariel\Desktop\innitial_data\$6129178185eec14208a3e247.csv"
-# directory = r"C:\Users\ariel\Desktop\innitial_data"
-# process_across_subjects(directory)
+#path = r"C:\Users\ariel\Desktop\data\$5d593dbaa0c0940001ּa471be.csv"
+path = r"C:\Users\ariel\Desktop\ariel_check.csv"
+directory = r"C:\Users\ariel\Dropbox\Experiments\Motivational_conflicts_mouse\data"
+process_across_subjects(directory)
 
-check = TrajectoryProcessing(path)
-check.normalize_time_points()
-check.rescale()
-check.remap_trajectories()
-#print(check.y[100,:])
-check.get_x_flips()
-# print (check.flips)
-#check.plot_by_conflict()
-check.get_max_deviation()
-check.get_middle_cross()
-# print(check.max_deviations)
-# # check.calculate_all_measures()
-for sub in range (check.NUM_TRIALS):
-    plt.plot(check.x[:,sub],check.y[:,sub],'--o')
-    plt.plot (check.line[:,0],check.line[:,1])
-    plt.xlim(-1.2,1.2)
-    #print(check.x[:,sub])
-    print(check.flips[sub])
-    print(check.max_deviations[sub])
-    print (check.middle_crosses[sub])
-    plt.show()
+# check = TrajectoryProcessing(path)
+# check.normalize_time_points()
+# check.rescale()
+# check.remap_trajectories()
+# #print(check.y[100,:])ּ
+# check.get_x_flips()
+# # print (check.flips)
+# check.plot_by_conflict()
+# check.get_max_deviation()
+# check.get_middle_cross()
+# # print(check.max_deviations)
+# # # check.calculate_all_measures()
+# for sub in range (check.NUM_TRIALS):
+#     plt.plot(check.x[:,sub],check.y[:,sub],'--ob')
+#     #plt.plot (check.line[:,0],check.line[:,1])
+#     plt.xlim(-1.2,1.2)
+#     #print(check.x[:,sub])
+#     print(check.flips[sub])
+#     print(check.max_deviations[sub])
+#     print (check.middle_crosses[sub])
+#     plt.show()
 
-# # plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
-
+# plt.plot(check.x[:,0:42],check.y[:,0:42],'--o')
 # plt.xlabel('X cordinate')
 # plt.ylabel('Y cordinate')
 # plt.show()
