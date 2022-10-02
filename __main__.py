@@ -27,8 +27,7 @@ def process_across_subjects(directory):
             cur_class.normalize_time_points()
             cur_class.rescale()
             cur_class.remap_trajectories()
-            cur_class.agg_by_conflict()
-            # cur_class.plot_by_conflict()
+            cur_class.agg_by_condition()
             cur_class.calculate_all_measures()
             cur_class.df['subject_id'] = int(float(files[sub][0:2]))# add 'subject id' column in correspondence with the name of the original file
             df_list.append(cur_class.df)
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     subjects_to_remove = [] #The list of subjects id's to remove was determined based on their attention check and behavioral data,                                           
     viz = Visualization(path,subjects_to_remove,'Study 1')
     viz.remove_subjects()
-    viz.agg_by_conflict()
+    viz.agg_by_condition()
     viz.plot_means_by_cond()
     viz.plot_trajectories_sample(100)
 

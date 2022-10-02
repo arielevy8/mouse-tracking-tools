@@ -90,33 +90,32 @@ class TrajectoryProcessing(object):
                 self.x[:,i] = -self.x[:,i]
 
 
-    def plot_by_conflict(self):
+    def plot_by_condition(self):
         """
-        This function plots all of the trajectories of a given subject, so that trajectories of 
-        AV-AV conflits are in red and AP-AP conflicts are in green.
+        This function plots all of the trajectories of a given subject.
         """
         ax = plt.figure()
         ax = ax.add_subplot(1,1,1)
-        self.app_ind = self.df.index[self.df['Conflict']=='Approach']
-        self.avo_ind = self.df.index[self.df['Conflict']=='Avoidance']
+        self.app_ind = self.df.index[self.df['Condition']==1]
+        self.avo_ind = self.df.index[self.df['Condition']==2]
         self.x_app = self.x[:,self.app_ind]
         self.x_avo = self.x[:,self.avo_ind]
         self.y_app = self.y[:,self.app_ind]
         self.y_avo = self.y[:,self.avo_ind]
-        ax.plot(self.x_app[:,0:42],self.y_app[:,0:42],'--go',label = 'AP-AP',markersize = 5)
-        ax.plot(self.x_avo[:,0:42],self.y_avo[:,0:42],'--ro',label = 'AV-AV',markersize = 5)
+        ax.plot(self.x_app[:,0:42],self.y_app[:,0:42],'--go',label = 'Condition 1',markersize = 5)
+        ax.plot(self.x_avo[:,0:42],self.y_avo[:,0:42],'--ro',label = 'Condition 2',markersize = 5)
         handles, labels = ax.get_legend_handles_labels()
         temp = {k:v for k,v in zip(labels, handles)}
         ax.legend(temp.values(), temp.keys(), loc='best')
         plt.show()
 
-    def agg_by_conflict(self):
+    def agg_by_condition(self):
         """
-        This function aggregates all trajectories by their condition - AP-AP or AV-AV, 
+        This function aggregates all trajectories by their condition - 1 or 2, 
         and creates datasets of aggregated trajectories.  
         """
-        self.app_ind = self.df.index[self.df['Conflict']=='Approach']
-        self.avo_ind = self.df.index[self.df['Conflict']=='Avoidance']
+        self.app_ind = self.df.index[self.df['Condition']==1]
+        self.avo_ind = self.df.index[self.df['Condition']==2]
         self.x_app = self.x[:,self.app_ind]
         self.x_avo = self.x[:,self.avo_ind]
         self.y_app = self.y[:,self.app_ind]
@@ -241,9 +240,3 @@ class TrajectoryProcessing(object):
         self.get_AUC()
         self.df['AUC'] = self.AUC
 
-# check = TrajectoryProcessing(r"C:\Users\user\Google Drive\Kleiman lab\mouse-tracking workshop\Study 1 data\1.csv")
-# check.normalize_time_points()
-# check.rescale()
-# check.remap_trajectories()
-# check.plot_by_conflict()
-# check.calculate_all_measures()

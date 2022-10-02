@@ -31,13 +31,13 @@ class Visualization (object):
         # # self.y = self.y[:,good_subjects_ind]
         self.df = self.df[~self.df['subject_id'].isin(self.subjects_to_remove)]
         
-    def agg_by_conflict(self):
+    def agg_by_condition(self):
         """
-        This function aggregates all trajectories by their condition - AP-AP or AV-AV, 
+        This function aggregates all trajectories by their condition, 
         and creates datasets of aggregated trajectories.  
         """
-        self.app_ind = self.df.index[self.df['Conflict']=='Approach']
-        self.avo_ind = self.df.index[self.df['Conflict']=='Avoidance']
+        self.app_ind = self.df.index[self.df['Condition']==1]
+        self.avo_ind = self.df.index[self.df['Condition']==2]
         self.x_app = self.x[:,self.app_ind]
         self.x_avo = self.x[:,self.avo_ind]
         self.y_app = self.y[:,self.app_ind]
