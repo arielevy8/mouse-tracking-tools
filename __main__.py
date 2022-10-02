@@ -49,11 +49,10 @@ def process_across_subjects(directory):
 if __name__ == "__main__":
 
     ## Process study 1:
-    directory = r"C:\Users\user\Google Drive\Kleiman lab\mouse-tracking workshop\Study 1 data" #The path for study 1 data
+    directory = r"your directory here" #The path for study data
     process_across_subjects(directory)
     path = directory+'\\all_subjects_processed'+str(date.today())+'.csv'
-    subjects_to_remove = [1,15,16,22,43,56,23] #The list of subjects id's to remove was determined based on their attention check and behavioral data,
-                                                #and the code determining which subjects to remove is to be found in the corresponding R code
+    subjects_to_remove = [] #The list of subjects id's to remove was determined based on their attention check and behavioral data,                                           
     viz = Visualization(path,subjects_to_remove,'Study 1')
     viz.remove_subjects()
     viz.agg_by_conflict()
