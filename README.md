@@ -13,6 +13,8 @@ Thus, for it to work on your dataset:
 
 Please contact me (arielevy8) regarding any need for clarification. 
 
+## Contents
+
 #### Preprocessing.py
 
 This class contains all preprocessing-related functions for mouse tracking data, including normalization, rescaling (to deal with data from different browsers and coordinate systems), and remapping. It also extracts all mouse-mouse-tracking-based measures.
