@@ -1,8 +1,8 @@
-from tabnanny import check
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import interpolate
+import math
 
 
 class TrajectoryProcessing(object):
@@ -226,6 +226,57 @@ class TrajectoryProcessing(object):
                 distances.append (cur_distance)
             self.max_deviations.append(max(distances))
 
+    def get_initiation_angle(self):
+        """
+        This function calculates the angle of the beggining of the mouse trajectory
+        initiation_angle_1 is based on the first timepoint.
+        initation_angle_10 is based on the 10th timepoint
+        """
+        self.initiation_angle_1 = []
+        self.initiation_angle_10 = []
+        point_of_angle = 10
+        for trial in range (self.NUM_TRIALS):
+            angle = math.atan2(self.y[0,trial]-self.y[point_of_angle,trial],self.x[point_of_angle,trial]-self.x[0,trial]) # calculate angle of the beggining of trajectory from the vactor [1,0](yaxis). see https://stackoverflow.com/questions/42258637/how-to-know-the-angle-between-two-vectors
+            angle = math.degrees(angle)
+            angle+=90 #this is in order to calculate angle with y axis and not x-axis
+            angle = abs (angle) 
+            self.initiation_angle_10.append(angle)
+            angle_1 = math.atan2(self.y[0,trial]-self.y[1,trial],self.x[1,trial]-self.x[0,trial]) # calculate angle of the beggining of trajectory from the vactor [1,0](yaxis). see https://stackoverflow.com/questions/42258637/how-to-know-the-angle-between-two-vectors
+            angle_1 = math.degrees(angle_1)
+            angle_1+=90 #this is in order to calculate angle with y axis and not x-axis
+            angle_1 = abs (angle_1) 
+            self.initiation_angle_1.append(angle_1)
+
+            ## uncomment the next lines in order to plot and check the measure validity.
+            # plt.plot (self.x[:,trial],self.y[:,trial],'--o')
+            # # plt.plot([self.x[0,trial],self.x[point_of_angle,trial]],[self.y[0,trial],self.y[point_of_angle,trial]])
+            # # plt.show()
+            # print(angle)
+            # print(angle_1)         
+
+    def get_initiation_cor(self):
+        """
+        This function check wether the initial trajectory and the eventual
+        response were in correspondence.
+        initiation_correspondence_1 is based on the first timepoint.
+        initation initiation_correspondence_10 is based on the 10th timepoint
+        """
+        self.initiation_correspondence_1 = []
+        self.initiation_correspondence_10  = []
+        for trial in range (self.NUM_TRIALS):
+            in_cor_1 = 0
+            in_cor_10 = 0
+            if self.x[1,trial]-self.x[0,trial]>0:
+                in_cor_1 = 1
+            if self.x[10,trial]-self.x[0,trial]>0:
+                in_cor_10 = 1
+            self.initiation_correspondence_1.append(in_cor_1)
+            self.initiation_correspondence_10.append(in_cor_10)
+            print(in_cor_1)
+            print(in_cor_10)
+            plt.plot(self.x[:,trial],self.y[:,trial],'--o')
+            plt.show()
+
     def calculate_all_measures(self):
         """
         This function calculates the measures (e,g. x flips, max deviation...)
@@ -239,4 +290,9 @@ class TrajectoryProcessing(object):
         self.df['RPB'] = self.RPB
         self.get_AUC()
         self.df['AUC'] = self.AUC
-
+        self.get_initiation_angle()
+        self.df['initation_angle_1'] = self.initiation_angle_1
+        self.df['initation_angle_10'] = self.initiation_angle_10
+        self.get_initiation_cor()
+        self.df['initiation_correspondence_1 '] = self.initiation_correspondence_1 
+        self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
