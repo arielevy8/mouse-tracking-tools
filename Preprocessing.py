@@ -286,10 +286,10 @@ class Preprocessing(object):
         self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
 
 
-exmp = Preprocessing(r'C:\Users\User\OneDrive\Desktop\git_mouse-tracking\MouseTrackingTools\example_data\maya.csv',0,72)
-exmp.normalize_time_points()
-exmp.rescale()
-print(np.shape(exmp.x))
-print(exmp.x)
-exmp.remap_trajectories()
-exmp.plot_by_condition()
+# exmp = Preprocessing(r'C:\Users\User\OneDrive\Desktop\git_mouse-tracking\MouseTrackingTools\example_data\1.csv',4,42)
+# exmp.normalize_time_points()
+# exmp.rescale()
+# print(np.shape(exmp.x))
+# print(exmp.x)
+# exmp.remap_trajectories()
+# exmp.plot_by_condition()
