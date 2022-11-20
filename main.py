@@ -3,13 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from Preprocessing import Preprocessing
-from Visualization import Visualization
+from visualization import Visualization
 from datetime import date
 
+num_practice_trials = 4
+num_trials = 42
 
-
-
-def process_across_subjects(directory):
+def process_across_subjects(directory,num_practice_trials,num_trials):
     """
     This function gets a directory and apply the functions in the above class on all of
     the subjects files in the directory.
@@ -20,9 +20,9 @@ def process_across_subjects(directory):
     x_list = []
     y_list = []
     for sub in range(len(files)):
-        if files[sub][0:3] != 'all' and files[sub][0] != '$':
+        if files[sub][0:3] != 'all':
             print("currently processing: ", files[sub], "subject number:", files[sub][0:2])
-            cur_class = Preprocessing(directory + "\\" + files[sub])
+            cur_class = Preprocessing(directory + "\\" + files[sub],num_practice_trials,num_trials)
             ###preprocess
             cur_class.normalize_time_points()
             cur_class.rescale()
@@ -47,15 +47,14 @@ def process_across_subjects(directory):
 
 if __name__ == "__main__":
 
-    ## Process study 1:
-    directory = r"your directory here" #The path for study data
-    process_across_subjects(directory)
-    path = directory+'\\all_subjects_processed'+str(date.today())+'.csv'
-    subjects_to_remove = [] #The list of subjects id's to remove was determined based on their attention check and behavioral data,                                           
-    viz = Visualization(path,subjects_to_remove,'Study 1')
-    viz.remove_subjects()
-    viz.agg_by_condition()
-    viz.plot_means_by_cond()
-    viz.plot_trajectories_sample(100)
+    ## Process study:
+    directory = os.getcwd()+'//'+'example_data' #The path for study data
+    process_across_subjects(directory,num_practice_trials,num_trials)
+#     path = directory+'\\all_subjects_processed'+str(date.today())+'.csv'
+#     subjects_to_remove = [] #The list of subjects id's to remove was determined based on their attention check and behavioral data,                                           
+#     viz = Visualization(path,subjects_to_remove,'Study 1')
+#     viz.remove_subjects()
+#     viz.agg_by_condition()
+#     viz.plot_means_by_cond()
+#     viz.plot_trajectories_sample(100)
 
- 

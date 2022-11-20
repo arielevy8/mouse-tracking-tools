@@ -150,9 +150,6 @@ class Preprocessing(object):
         """
         This funcction calculates the number of times the mouse cursor cross the middle of the X-axis
         """
-        self.crosses_y_ap= []
-        self.crosses_y_av = [] #initialize two lists for the later visualization
-        self.crosses_ycor = []
         self.RPB = []
         for trial  in range (self.NUM_TRIALS):
             crosses = 0
@@ -162,16 +159,8 @@ class Preprocessing(object):
             for i in range(1,self.NUM_TIMEPOINTS):
                 if (self.x[last_i,trial] > 0 and self.x[i,trial] < 0) or (self.x[last_i,trial] < 0 and self.x[i,trial] > 0):
                     crosses += 1
-                    if self.y[i,trial]<1.5:
-                        crosses_cut +=1
-                    cur_crosses_ycor.append(self.y[i,trial])
-                    if (self.df['Conflict'][trial] == 'Approach'):
-                        self.crosses_y_ap.append(self.y[i,trial]) #append the y position of the cross for later visualization
-                    elif (self.df['Conflict'][trial] == 'Avoidance'):
-                        self.crosses_y_av.append(self.y[i,trial])
                 last_i += 1
             self.RPB.append(crosses)
-            self.crosses_ycor.append(cur_crosses_ycor)
 
 
     def get_AUC (self):
@@ -260,10 +249,11 @@ class Preprocessing(object):
                 in_cor_10 = 1
             self.initiation_correspondence_1.append(in_cor_1)
             self.initiation_correspondence_10.append(in_cor_10)
-            print(in_cor_1)
-            print(in_cor_10)
-            plt.plot(self.x[:,trial],self.y[:,trial],'--o')
-            plt.show()
+            # #uncomment the following lines for check plot
+            # print(in_cor_1)
+            # print(in_cor_10)
+            # plt.plot(self.x[:,trial],self.y[:,trial],'--o')
+            # plt.show()
 
     def calculate_all_measures(self):
         """
@@ -286,10 +276,8 @@ class Preprocessing(object):
         self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
 
 
-# exmp = Preprocessing(r'C:\Users\User\OneDrive\Desktop\git_mouse-tracking\MouseTrackingTools\example_data\1.csv',4,42)
+# exmp = Preprocessing(r'C:\Users\ariel\Desktop\github mouse tracking\example_data\1.csv',4,42)
 # exmp.normalize_time_points()
 # exmp.rescale()
-# print(np.shape(exmp.x))
-# print(exmp.x)
 # exmp.remap_trajectories()
 # exmp.plot_by_condition()
