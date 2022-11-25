@@ -28,10 +28,9 @@ Example plots made by this script can be found in 'images' folder.
 
 Script for using the two classes mentioned above to process the mouse tracking data of multiple subjects iteratively.
 
-Example plots made by this script can be found in 'images' folder.
-
 #### rprocessing.R
 
-R script for extensive visualization and analysis of the preprocessed data
+R script for extensive visualization and analysis of the preprocessed data.
+Example plots made by this script can be found in 'images' folder.
 
 
