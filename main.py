@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from Preprocessing import Preprocessing
-from visualization import Visualization
+from Visualization import Visualization
 from datetime import date
 
 num_practice_trials = 4
