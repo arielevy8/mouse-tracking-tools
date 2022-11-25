@@ -23,10 +23,15 @@ This class contains all preprocessing-related functions for mouse tracking data,
 
 This class contains functions that handle some parts of the data visualization (other parts of the data visualization can be found in the R script).
 
+Example plots made by this script can be found in 'images' folder.
 #### main.py
 
 Script for using the two classes mentioned above to process the mouse tracking data of multiple subjects iteratively.
 
+Example plots made by this script can be found in 'images' folder.
+
 #### rprocessing.R
 
 R script for extensive visualization and analysis of the preprocessed data
+
+
