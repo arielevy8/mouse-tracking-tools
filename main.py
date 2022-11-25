@@ -13,7 +13,11 @@ def process_across_subjects(directory,num_practice_trials,num_trials):
     """
     This function gets a directory and apply the functions in the above class on all of
     the subjects files in the directory.
-    It also creates a unified CSV file of all subjects and saves it in the directory
+    It also creates a unified CSV file of all subjects and saves it in the directory.
+    :Param directory: directory of the data files.
+    :param num_practice_trials: int, number of practice trials (trials with mouse tracking data that are
+    to be ignored in the analysis)
+    :Param num_triasl: int, number of non-practice trials to analyze 
     """
     df_list = []
     files = os.listdir(directory)
@@ -28,8 +32,8 @@ def process_across_subjects(directory,num_practice_trials,num_trials):
             cur_class.rescale()
             cur_class.remap_trajectories()
             cur_class.calculate_all_measures()
-            cur_class.plot_by_condition()
-            cur_class.df['subject_id'] = int(float(files[sub][0:2]))# add 'subject id' column in correspondence with the name of the original file
+            cur_class.df['subject_id'] = int(float(files[sub][0:2]))# add 'subject id' column in correspondence with 
+                                                                    # the name of the original file
             df_list.append(cur_class.df)
             x_list.append(cur_class.x)
             y_list.append(cur_class.y)  
@@ -48,13 +52,12 @@ def process_across_subjects(directory,num_practice_trials,num_trials):
 if __name__ == "__main__":
 
     ## Process study:
-    directory = os.getcwd()+'//'+'example_data' #The path for study data
+    directory = os.getcwd()+'\\'+'example_data' #The path for study data
     process_across_subjects(directory,num_practice_trials,num_trials)
-#     path = directory+'\\all_subjects_processed'+str(date.today())+'.csv'
-#     subjects_to_remove = [] #The list of subjects id's to remove was determined based on their attention check and behavioral data,                                           
-#     viz = Visualization(path,subjects_to_remove,'Study 1')
-#     viz.remove_subjects()
-#     viz.agg_by_condition()
-#     viz.plot_means_by_cond()
-#     viz.plot_trajectories_sample(100)
+    viz = Visualization(directory+'\\all_subjects_processed'+str(date.today())+'.csv','Example Data')
+    viz.plot_means() #plots the mean of the experiment
+    viz.plot_trajectories_sample(5) #plots randomly sampled 5 trajectories for each condition
+    viz.plot_subject_mean(3) # plots the mean trajectories of subject 3
+    viz.plot_subject(3) # plots all trajectories of subject 3 
+
 
