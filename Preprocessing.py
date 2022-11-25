@@ -10,9 +10,9 @@ class Preprocessing(object):
     This class gets csv path for a single subject in the experiment, 
     and contain of functions that handle with the preprocessing of the mouse-trajectory data
     and with the extraction of the trajectory-based measures
-    :Param num_practice_trials: number of practice trials (trials with mouse tracking data that are
+    :Param num_practice_trials:int, number of practice trials (trials with mouse tracking data that are
     to be ignored in the analysis)
-    :Param num_triasl: number of non-practice trials to analyze
+    :Param num_triasl:int, number of non-practice trials to analyze
     """
     def __init__(self,path,num_practice_trials,num_trials):
         self.NUM_PRACTICE_TRIALS = num_practice_trials
@@ -88,27 +88,6 @@ class Preprocessing(object):
             if self.x[self.NUM_TIMEPOINTS-1,i] < 0: #i.e., if the trajectory ends in the left target
                 self.x[:,i] = -self.x[:,i]
 
-
-    def plot_by_condition(self):
-        """
-        This function plots all of the trajectories of a given subject.
-        """
-        ax = plt.figure()
-        ax = ax.add_subplot(1,1,1)
-        self.conditions = self.df['Condition'].unique()
-        colors = plt.cm.rainbow(np.linspace(0, 1, len(self.conditions)))
-        counter = 0
-        for cond in self.conditions:
-            ind = self.df.index[self.df['Condition']==cond]
-            x = self.x[:,ind]
-            y = self.y[:,ind]
-            ax.plot(x,y,'--o',c = colors[counter],label = cond,markersize = 5)
-            counter +=1
-        handles, labels = ax.get_legend_handles_labels()
-        temp = {k:v for k,v in zip(labels, handles)}
-        ax.legend(temp.values(), temp.keys(), loc='best')
-        plt.show()
-    
 
     def get_x_flips(self):
         """
@@ -236,7 +215,7 @@ class Preprocessing(object):
         This function check wether the initial trajectory and the eventual
         response were in correspondence.
         initiation_correspondence_1 is based on the first timepoint.
-        initation initiation_correspondence_10 is based on the 10th timepoint
+        initiation_correspondence_10 is based on the 10th timepoint
         """
         self.initiation_correspondence_1 = []
         self.initiation_correspondence_10  = []
