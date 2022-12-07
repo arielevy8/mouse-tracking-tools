@@ -33,4 +33,7 @@ Script for using the two classes mentioned above to process the mouse tracking d
 R script for extensive visualization and analysis of the preprocessed data.
 Example plots made by this script can be found in 'images' folder.
 
+#### example data
+Mock data of three 'participants' in a generic experiment with two conditions.
+
 
