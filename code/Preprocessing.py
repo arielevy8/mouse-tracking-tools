@@ -14,28 +14,42 @@ class Preprocessing(object):
     to be ignored in the analysis)
     :Param num_triasl:int, number of non-practice trials to analyze
     """
-    def __init__(self,path,num_practice_trials,num_trials):
+    def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column):
+        self.isOK = True
         self.NUM_PRACTICE_TRIALS = num_practice_trials
         self.NUM_TRIALS = num_trials
         self.NUM_TIMEPOINTS = 100
         self.df = pd.read_csv (path,index_col=None, header=0) 
-        self.df = self.df.dropna(subset = ["x_cord"]) #read only lines with mouse tracking data
-        self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,] #drop practice trials
+        self.df = self.df.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
+        self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
         self.df = self.df.reset_index()
-        self.x = self.df["x_cord"]
-        self.y = self.df["y_cord"]
+        self.x = self.df[x_cord_column]
+        self.y = self.df[y_cord_column]
 
         self.x = self.x.str.split(',', expand=True)
         self.x = self.x.reset_index(drop=True)
-        self.x = self.x.to_numpy() #convert to numpy matrix for future processing
-        self.x = self.x.astype(np.float64) #convert type from strings to floats
-        self.x = np.transpose(self.x) #transpose for easier processing (now the matrix size is NUM_TIMEPOINTS*NUM_TRIALS)
+        self.x = self.x.to_numpy()  # convert to numpy matrix for future processing
+        self.x = self.x.astype(np.float64)  # convert type from strings to floats
+        self.x = np.transpose(self.x)  # transpose for easier processing (now matrix size is NUM_TIMEPOINTS*NUM_TRIALS)
 
         self.y = self.y.str.split(',', expand=True)
         self.y = self.y.reset_index(drop=True)
         self.y = self.y.to_numpy()
         self.y = self.y.astype(np.float64)
-        self.y = np.transpose(self.y)        
+        self.y = np.transpose(self.y)
+        # check input properties, and return "isOK = False" when the recorded mouse tracking data is incomplete
+        if (self.x.shape[1]) != self.NUM_TRIALS or self.y.shape[1] != self.NUM_TRIALS:  # if data is missing for trials
+            self.isOK = False
+        else:
+            for i in range(self.NUM_TRIALS):  # run over trials and check if there are enough recorded timepoints
+                cur_x = self.x[:,i]
+                num_recorded_timepoints = cur_x[~np.isnan(cur_x)].shape[0]
+                if num_recorded_timepoints < 2:
+                    self.isOK = False
+        if not self.isOK:
+            print('This participant did not provide mouse-data, and thus can not be processed.' +
+                  'This might be because he completed the experiment without using a mouse')
+        print(self.x.shape)
 
     def normalize_time_points(self):
         """
@@ -239,20 +253,32 @@ class Preprocessing(object):
         This function calculates the measures (e,g. x flips, max deviation...)
         and saves each measure as a column in the data frame.
         """
-        self.get_x_flips()
-        self.df['flips'] = self.flips
-        self.get_max_deviation()
-        self.df['max_deviation'] = self.max_deviations
-        self.get_RPB()
-        self.df['RPB'] = self.RPB
-        self.get_AUC()
-        self.df['AUC'] = self.AUC
-        self.get_initiation_angle()
-        self.df['initation_angle_1'] = self.initiation_angle_1
-        self.df['initation_angle_10'] = self.initiation_angle_10
-        self.get_initiation_cor()
-        self.df['initiation_correspondence_1 '] = self.initiation_correspondence_1 
-        self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
+        self.df['is_OK'] = self.isOK
+        if self.isOK:
+            self.get_x_flips()
+            self.df['flips'] = self.flips
+            self.get_max_deviation()
+            self.df['max_deviation'] = self.max_deviations
+            self.get_RPB()
+            self.df['RPB'] = self.RPB
+            self.get_AUC()
+            self.df['AUC'] = self.AUC
+            self.get_initiation_angle()
+            self.df['initation_angle_1'] = self.initiation_angle_1
+            self.df['initation_angle_10'] = self.initiation_angle_10
+            self.get_initiation_cor()
+            self.df['initiation_correspondence_1'] = self.initiation_correspondence_1
+            self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
+        else:  # if data is not ok, fill all columns with nan
+            self.df['flips'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['max_deviation'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['RPB'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['AUC'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initation_angle_1'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initation_angle_10'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initiation_correspondence_1'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initiation_correspondence_10'] = (np.full([self.df.shape[0]],np.nan))
+
 
 
 # exmp = Preprocessing(r'C:\Users\ariel\Desktop\github mouse tracking\example_data\1.csv',4,42)

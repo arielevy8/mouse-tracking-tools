@@ -13,7 +13,7 @@ class Visualization (object):
     :Param study_title: string, will be used as the title of the plot
     :Param subjects_to_remove: list of subject numbers to remove from the plot
     """
-    def __init__(self,path,study_title,subjects_to_remove =[]):
+    def __init__(self,path,study_title,condition_column,subjects_to_remove =[]):
         
         self.NUM_TIMEPOINTS = 100
         self.df = pd.read_csv (path,index_col=None, header=0) 
@@ -28,6 +28,7 @@ class Visualization (object):
         self.y = np.transpose(y_df.to_numpy())
         self.study_title = study_title
         self.num_subjects = len(self.df['subject_id'].unique())
+        self.condition_column = condition_column
 
         
 
@@ -35,11 +36,11 @@ class Visualization (object):
         """
         This function plot the average mouse trajectory in each condition.
         """
-        self.conditions = self.df['Condition'].unique()
+        self.conditions = self.df[self.condition_column].unique()
         colors = plt.cm.rainbow(np.linspace(0, 1, len(self.conditions)))
         counter = 0
         for cond in self.conditions:
-            ind = self.df.index[self.df['Condition']==cond]
+            ind = self.df.index[(self.df[self.condition_column] == cond) & (self.df['is_OK'] == True)]
             x = self.x[:,ind]
             y = self.y[:,ind]
             mean_x = np.mean(x,axis=1)
@@ -70,11 +71,11 @@ class Visualization (object):
         """
         ax = plt.figure()
         ax = ax.add_subplot(1,1,1)
-        self.conditions = self.df['Condition'].unique()
+        self.conditions = self.df[self.condition_column].unique()
         colors = plt.cm.rainbow(np.linspace(0, 1, len(self.conditions)))
         counter = 0
         for cond in self.conditions:
-            ind = self.df.index[self.df['Condition']==cond]
+            ind = self.df.index[(self.df[self.condition_column] == cond) & (self.df['is_OK'] == True)]
             x = self.x[:,ind]
             y = self.y[:,ind]
             ind_subset = np.random.choice (ind.shape[0],num_traj)
@@ -98,12 +99,12 @@ class Visualization (object):
         """
         ax = plt.figure()
         ax = ax.add_subplot(1,1,1)
-        self.conditions = self.df['Condition'].unique()
+        self.conditions = self.df[self.condition_column].unique()
         colors = plt.cm.rainbow(np.linspace(0, 1, len(self.conditions)))
         counter = 0
         subject_ind = self.df.index[self.df['subject_id']==subject_id]
         for cond in self.conditions:
-            cond_ind = self.df.index[self.df['Condition']==cond]
+            cond_ind = self.df.index[self.df[self.condition_column]==cond]
             ind = subject_ind.intersection(cond_ind)
             x = self.x[:,ind]
             y = self.y[:,ind]
@@ -122,12 +123,12 @@ class Visualization (object):
         This function plots the mean of the trajectories of a given subject.
         :Param subject_id: int, the index of the subject
         """
-        self.conditions = self.df['Condition'].unique()
+        self.conditions = self.df[self.condition_column].unique()
         colors = plt.cm.rainbow(np.linspace(0, 1, len(self.conditions)))
         counter = 0
         subject_ind = self.df.index[self.df['subject_id']==subject_id]
         for cond in self.conditions:
-            cond_ind = self.df.index[self.df['Condition']==cond]
+            cond_ind = self.df.index[self.df[self.condition_column]==cond]
             ind = subject_ind.intersection(cond_ind)
             x = self.x[:,ind]
             y = self.y[:,ind]
