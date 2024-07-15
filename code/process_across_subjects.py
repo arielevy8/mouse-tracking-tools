@@ -17,9 +17,10 @@ def process_across_subjects(data_directory,output_directory,num_practice_trials,
     files = os.listdir(data_directory)
     x_list = []
     y_list = []
+    sub_counter = 1
     for sub in range(len(files)):
-        if files[sub][0:3] != 'all':
-            print("currently processing: ", files[sub], "subject number:", files[sub][0:2])
+        if files[sub][0:3] != 'all' and files[sub] != '.DS_Store':
+            print("currently processing: ", files[sub], "subject number:", sub_counter)
             cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials)
             ###preprocess
             cur_class.normalize_time_points()
@@ -31,6 +32,7 @@ def process_across_subjects(data_directory,output_directory,num_practice_trials,
             df_list.append(cur_class.df)
             x_list.append(cur_class.x)
             y_list.append(cur_class.y)
+            sub_counter += 1
     big_df = pd.concat(df_list)
     big_x = np.concatenate(x_list,axis=1)
     big_y = np.concatenate(y_list,axis=1)
