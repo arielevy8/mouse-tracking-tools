@@ -12,7 +12,7 @@ class Preprocessing(object):
     and with the extraction of the trajectory-based measures
     :Param num_practice_trials:int, number of practice trials (trials with mouse tracking data that are
     to be ignored in the analysis)
-    :Param num_triasl:int, number of non-practice trials to analyze
+    :Param num_trials: int, number of non-practice trials to analyze
     """
     def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column):
         self.isOK = True
@@ -92,7 +92,6 @@ class Preprocessing(object):
         self.y -=self.continue_y
         self.y = (-self.y / ((self.continue_y-self.targets_y)))*1.5
 
-
     def remap_trajectories(self):
         """
         This function remaps all of the trajectories to the right.
@@ -102,19 +101,17 @@ class Preprocessing(object):
             if self.x[self.NUM_TIMEPOINTS-1,i] < 0: #i.e., if the trajectory ends in the left target
                 self.x[:,i] = -self.x[:,i]
 
-
     def get_x_flips(self):
         """
         This function calculates number of x flips trial by trial and saves it as a variable 'flips' of the class.
         """
         self.flips = []
-        for trial in  range (self.NUM_TRIALS):
+        for trial in range(self.NUM_TRIALS):
             bigger, smaller = False, False
-            x_count= 0
+            x_count = 0
             last_i = 0
             cur_trial_xcor = []
             for i in range(1,self.NUM_TIMEPOINTS):
-                
                 if self.x[last_i,trial] > self.x[i,trial]:
                     last_i += 1
                     if not bigger:
@@ -144,28 +141,28 @@ class Preprocessing(object):
         This funcction calculates the number of times the mouse cursor cross the middle of the X-axis
         """
         self.RPB = []
-        for trial  in range (self.NUM_TRIALS):
+        for trial in range(self.NUM_TRIALS):
             crosses = 0
             crosses_cut = 0
             last_i = 0
             cur_crosses_ycor = []
             for i in range(1,self.NUM_TIMEPOINTS):
-                if (self.x[last_i,trial] > 0 and self.x[i,trial] < 0) or (self.x[last_i,trial] < 0 and self.x[i,trial] > 0):
+                if (self.x[last_i, trial] > 0 > self.x[i, trial]) or (self.x[last_i, trial] < 0 < self.x[i, trial]):
                     crosses += 1
                 last_i += 1
             self.RPB.append(crosses)
 
-
-    def get_AUC (self):
+    def get_AUC(self):
         """
         This function calculates all area under the curve for the trajectories
         """
-        self.AUC =[]
+        self.AUC = []
         for i in range(self.NUM_TRIALS):
-            cur_x = self.x[:,i]
-            cur_y = self.y[:,i]
-            line_x, line_y = cur_x, 1.5 *cur_x #create a straight line from (0,0) to (1,1.5). specifically, using the trajectory x cordinates to enable integration
-            cur_integral = np.trapz(cur_y-line_y,dx = 1/self.NUM_TIMEPOINTS) #integrate on the distance between the actual trajectory and a straight line
+            cur_x = self.x[:, i]
+            cur_y = self.y[:, i]
+            line_x, line_y = cur_x, 1.5*cur_x  # create a straight line from (0,0) to (1,1.5).
+            # integrate on the distance between the actual trajectory and a straight line
+            cur_integral = np.trapz(cur_y-line_y, dx=1/self.NUM_TIMEPOINTS)
             self.AUC.append(cur_integral)
             
             # #possibility - uncomment this section to visualize the integrated part and compare it to the calculated MD and AUC
@@ -185,67 +182,39 @@ class Preprocessing(object):
         IMPORTANT: this function will only work if you apply the rescale and remap functions first.
         """
         self.max_deviations = []
-        for i in range (self.NUM_TRIALS):
-            line_x, line_y = np.linspace(self.x[0,i],self.x[self.NUM_TIMEPOINTS-1,i],self.NUM_TIMEPOINTS),np.linspace(self.y[0,i],self.y[self.NUM_TIMEPOINTS-1,i],self.NUM_TIMEPOINTS)
+        for i in range(self.NUM_TRIALS):
+            line_x, line_y = (np.linspace(self.x[0, i], self.x[self.NUM_TIMEPOINTS-1, i], self.NUM_TIMEPOINTS),
+                              np.linspace(self.y[0, i], self.y[self.NUM_TIMEPOINTS-1, i], self.NUM_TIMEPOINTS))
             self.line = np.column_stack((line_x, line_y))
-            distances =[]
-            for j in range (self.NUM_TIMEPOINTS):
-                cur_point = np.array([self.x[j,i],self.y[j,i]])
-                norm = np.linalg.norm(self.line-cur_point,axis = 1)
+            distances = []
+            for j in range(self.NUM_TIMEPOINTS):
+                cur_point = np.array([self.x[j, i], self.y[j, i]])
+                norm = np.linalg.norm(self.line-cur_point, axis=1)
                 cur_distance = min(norm)
-                distances.append (cur_distance)
+                distances.append(cur_distance)
             self.max_deviations.append(max(distances))
 
     def get_initiation_angle(self):
         """
-        This function calculates the angle of the beggining of the mouse trajectory
-        initiation_angle_1 is based on the first timepoint.
-        initation_angle_10 is based on the 10th timepoint
+        This function calculates the angle of the starting movement of the mouse trajectory relative to the y-axis
         """
-        self.initiation_angle_1 = []
-        self.initiation_angle_10 = []
+        self.initiation_angle = []
+        self.initiation_correspondence = []
         point_of_angle = 10
-        for trial in range (self.NUM_TRIALS):
-            angle = math.atan2(self.y[0,trial]-self.y[point_of_angle,trial],self.x[point_of_angle,trial]-self.x[0,trial]) # calculate angle of the beggining of trajectory from the vactor [1,0](yaxis). see https://stackoverflow.com/questions/42258637/how-to-know-the-angle-between-two-vectors
+        for trial in range(self.NUM_TRIALS):
+            # calculate angle of the beginning of trajectory from the vector [1,0](x-axis).
+            # see https://stackoverflow.com/questions/42258637/how-to-know-the-angle-between-two-vectors
+            angle = math.atan2(self.y[0, trial]-self.y[point_of_angle, trial],
+                               self.x[point_of_angle, trial]-self.x[0, trial])
             angle = math.degrees(angle)
-            angle+=90 #this is in order to calculate angle with y axis and not x-axis
-            angle = abs (angle) 
-            self.initiation_angle_10.append(angle)
-            angle_1 = math.atan2(self.y[0,trial]-self.y[1,trial],self.x[1,trial]-self.x[0,trial]) # calculate angle of the beggining of trajectory from the vactor [1,0](yaxis). see https://stackoverflow.com/questions/42258637/how-to-know-the-angle-between-two-vectors
-            angle_1 = math.degrees(angle_1)
-            angle_1+=90 #this is in order to calculate angle with y axis and not x-axis
-            angle_1 = abs (angle_1) 
-            self.initiation_angle_1.append(angle_1)
+            angle = abs(angle)
+            self.initiation_angle.append(angle)
+            self.initiation_correspondence.append(angle < 90)
 
-            ## uncomment the next lines in order to plot and check the measure validity.
-            # plt.plot (self.x[:,trial],self.y[:,trial],'--o')
-            # # plt.plot([self.x[0,trial],self.x[point_of_angle,trial]],[self.y[0,trial],self.y[point_of_angle,trial]])
-            # # plt.show()
-            # print(angle)
-            # print(angle_1)         
-
-    def get_initiation_cor(self):
-        """
-        This function check wether the initial trajectory and the eventual
-        response were in correspondence.
-        initiation_correspondence_1 is based on the first timepoint.
-        initiation_correspondence_10 is based on the 10th timepoint
-        """
-        self.initiation_correspondence_1 = []
-        self.initiation_correspondence_10  = []
-        for trial in range (self.NUM_TRIALS):
-            in_cor_1 = 0
-            in_cor_10 = 0
-            if self.x[1,trial]-self.x[0,trial]>0:
-                in_cor_1 = 1
-            if self.x[10,trial]-self.x[0,trial]>0:
-                in_cor_10 = 1
-            self.initiation_correspondence_1.append(in_cor_1)
-            self.initiation_correspondence_10.append(in_cor_10)
-            # #uncomment the following lines for check plot
-            # print(in_cor_1)
-            # print(in_cor_10)
+            # # uncomment the next lines in order to plot and check the measure validity.
             # plt.plot(self.x[:,trial],self.y[:,trial],'--o')
+            # plt.plot([self.x[0,trial],self.x[point_of_angle,trial]],[self.y[0,trial],self.y[point_of_angle,trial]])
+            # plt.title(angle)
             # plt.show()
 
     def calculate_all_measures(self):
@@ -264,20 +233,15 @@ class Preprocessing(object):
             self.get_AUC()
             self.df['AUC'] = self.AUC
             self.get_initiation_angle()
-            self.df['initation_angle_1'] = self.initiation_angle_1
-            self.df['initation_angle_10'] = self.initiation_angle_10
-            self.get_initiation_cor()
-            self.df['initiation_correspondence_1'] = self.initiation_correspondence_1
-            self.df['initiation_correspondence_10'] = self.initiation_correspondence_10
+            self.df['initiation_angle'] = self.initiation_angle
+            self.df['initiation_correspondence'] = self.initiation_correspondence
         else:  # if data is not ok, fill all columns with nan
             self.df['flips'] = (np.full([self.df.shape[0]],np.nan))
             self.df['max_deviation'] = (np.full([self.df.shape[0]],np.nan))
             self.df['RPB'] = (np.full([self.df.shape[0]],np.nan))
             self.df['AUC'] = (np.full([self.df.shape[0]],np.nan))
-            self.df['initation_angle_1'] = (np.full([self.df.shape[0]],np.nan))
-            self.df['initation_angle_10'] = (np.full([self.df.shape[0]],np.nan))
-            self.df['initiation_correspondence_1'] = (np.full([self.df.shape[0]],np.nan))
-            self.df['initiation_correspondence_10'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initiation_angle'] = (np.full([self.df.shape[0]],np.nan))
+            self.df['initiation_correspondence'] = (np.full([self.df.shape[0]],np.nan))
 
 
 
