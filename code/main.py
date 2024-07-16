@@ -33,7 +33,7 @@ NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will no
 TRAJECTORY_TO_INSPECT = []
 
 # Alternative usage
-PREPROCESS = False  # Change to False if the data is already processed, and you only want to do visualization
+PREPROCESS = True  # Change to False if the data is already processed, and you only want to do visualization
 ALTERNATIVE_VIS_PATH = ''  # add file path if you want to visualize different file other than what was preprocessed
 
 if __name__ == "__main__":
