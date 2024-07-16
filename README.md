@@ -16,11 +16,11 @@ Please feel free to contact me (ariel.levy2@mail.huji.ac.il) for any further cla
 
 ## Contents
 
-### data
+### Data
 The data folder includes mock data of three 'participants' in a generic experiment with one factor containing two conditions. This is only for demonstration purposes.
 You can copy your own data files to this folder in order to process them. Alternatively, you can define 
 
-### code:
+### Code:
 
 #### Preprocessing.py
 
@@ -46,6 +46,6 @@ Example plots made by this script can be found in the 'output' folder.
 
 The main file, in which you can define global variables, such as column names and visualizations' design parameters, and run preprocessing and visualization.
 
-### output
+### Output
 This folder includes example output files: preprocessed unified data file and visualization results.
 
