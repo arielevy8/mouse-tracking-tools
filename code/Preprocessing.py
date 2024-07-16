@@ -80,7 +80,6 @@ class Preprocessing(object):
         and the right and left targets are in [1,1.5] and [-1,1.5] respectively
         """
 
-        #left_target_x, right_target_x = 445,975
         self.continue_x = np.mean(self.x[0,:])#calculating the x cordinates for the continue button
         left_subset = self.x[:,self.x[self.NUM_TIMEPOINTS-1,:]<self.continue_x] #subsetting all trials where the left option is chosen
         right_subset = self.x[:,self.x[self.NUM_TIMEPOINTS-1,:]>self.continue_x]
