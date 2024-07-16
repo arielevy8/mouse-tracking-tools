@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from seaborn import heatmap
-
+import os
 
 class Visualization (object):
     """
@@ -13,10 +12,10 @@ class Visualization (object):
     :Param study_title: string, will be used as the title of the plot
     :Param subjects_to_remove: list of subject numbers to remove from the plot
     """
-    def __init__(self, path, study_title, first_condition_column, second_condition_column,
+    def __init__(self, path, output_directory, study_title, first_condition_column, second_condition_column,
                  title_size, labels_size,ticks_size, legend_size, point_size, colormap,
                  subject_to_inspect, num_samples, trajectory_to_inspect, subjects_to_remove =[]):
-        
+        self.output_directory = output_directory
         self.NUM_TIMEPOINTS = 100
         self.df = pd.read_csv(path,index_col=None, header=0)
         self.subjects_to_remove = subjects_to_remove
@@ -90,7 +89,7 @@ class Visualization (object):
                 std_x = np.std(x, axis=1)
                 se_x = std_y/np.sqrt(self.num_subjects)
                 if type(cond_1)!= str:
-                    label = 'Condition: '+ str(cond_1)
+                    label = self.first_condition_column + ': ' + str(cond_1)
                 elif type(cond_1)==str:
                     label = cond_1
                 ax.plot(mean_x, mean_y, '--o', c=colors[j], label=label, markersize=self.point_size)
@@ -106,6 +105,8 @@ class Visualization (object):
                 ax.set_title(cond_2, fontsize=self.title_size)
             else:
                 ax.set_title(self.study_title, fontsize=self.title_size)
+        plt.savefig(self.output_directory + os.sep + 'Average trajectories',
+                    dpi=300)
         plt.show()
 
     def plot_subject(self):
@@ -127,7 +128,7 @@ class Visualization (object):
                     x = self.x[:, sub_cur_ind]
                     y = self.y[:, sub_cur_ind]
                     if type(cond_1) != str:
-                        label = 'Condition: '+str(cond_1)
+                        label = self.first_condition_column+': ' +str(cond_1)
                     elif type(cond_1) == str:
                         label = cond_1
                     ax.plot(x, y, '--o', c=colors[j], label=label, markersize=self.point_size)
@@ -144,6 +145,8 @@ class Visualization (object):
                                  fontsize=self.title_size)
                 else:
                     ax.set_title(('Subject: '+str(self.subject_to_inspect)), fontsize=self.title_size)
+            plt.savefig(self.output_directory+os.sep+'Subject '+str(self.subject_to_inspect)+' trajectories',
+                        dpi=300)
             plt.show()
 
     # def plot_subject_mean(self, subject_id):

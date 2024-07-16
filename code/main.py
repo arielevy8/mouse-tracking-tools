@@ -9,17 +9,17 @@ from process_across_subjects import process_across_subjects
 DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
-NUM_PRACTICE_TRIALS = 4
-NUM_TRIALS = 42
+NUM_PRACTICE_TRIALS = 4  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
+NUM_TRIALS = 42  # Required, number of experimental trials.
 
 # Set column names
 X_CORD_COLUMN = 'x_cord'  # The name of the column of x coordinates
 Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
-FIRST_CONDITION_COLUMN = 'Conflict'  # Optional, name of the column describe the experimental condition
-SECOND_CONDITION_COLUMN = 'TaskType'  # Optional, name of the column describe an experimental condition of second order
+FIRST_CONDITION_COLUMN = 'Condition'  # Optional, name of the column describe the experimental condition
+SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
 
 # Set visualization parameters
-STUDY_TITLE = 'Example'  # This will be the title of the graph
+STUDY_TITLE = ''  # This will be the title of the graph
 TITLE_SIZE = 16
 LABELS_SIZE = 12
 TICKS_SIZE = 10
@@ -28,7 +28,7 @@ POINT_SIZE = 4
 COLORMAP = 'rainbow'  # Other common options: RdYlGn, viridis
 
 # Parameters for additional visualization options
-SUBJECT_TO_INSPECT = 2  # Integer, subject ID to plot. If 0, will not plot specific subject.
+SUBJECT_TO_INSPECT = 6  # Integer, subject ID to plot. If 0, will not plot specific subject.
 NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will not plot sample trajectory
 TRAJECTORY_TO_INSPECT = []
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         vis_path = ALTERNATIVE_VIS_PATH
     else:
         vis_path = output_directory + os.sep + 'all_subjects_processed' + str(date.today()) + '.csv'
-    viz = Visualization(vis_path,
+    viz = Visualization(vis_path, output_directory,
                         STUDY_TITLE,
                         FIRST_CONDITION_COLUMN, SECOND_CONDITION_COLUMN,
                         TITLE_SIZE, LABELS_SIZE, TICKS_SIZE , LEGEND_SIZE, POINT_SIZE,COLORMAP,
