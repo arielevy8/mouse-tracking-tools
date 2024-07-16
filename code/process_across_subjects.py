@@ -20,7 +20,7 @@ def process_across_subjects(data_directory,output_directory,num_practice_trials,
     sub_counter = 1
     for sub in range(len(files)):
         if files[sub][0:3] != 'all' and files[sub] != '.DS_Store':
-            print("currently processing: ", files[sub], "subject number:", sub_counter)
+            print("currently processing ", "subject :", sub_counter)
             cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials,x_cord_column,y_cord_column)
             # preprocess
             if cur_class.isOK:

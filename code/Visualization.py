@@ -14,7 +14,7 @@ class Visualization (object):
     """
     def __init__(self, path, output_directory, study_title, first_condition_column, second_condition_column,
                  title_size, labels_size,ticks_size, legend_size, point_size, colormap,
-                 subject_to_inspect, num_samples, trajectory_to_inspect, subjects_to_remove =[]):
+                 subject_to_inspect, subjects_to_remove =[]):
         self.output_directory = output_directory
         self.NUM_TIMEPOINTS = 100
         self.df = pd.read_csv(path,index_col=None, header=0)
@@ -45,8 +45,9 @@ class Visualization (object):
         self.legend_size = legend_size
         self.colormap = colormap
         self.subject_to_inspect = subject_to_inspect
-        self.num_samples = num_samples
-        self.trajectory_to_inspect = trajectory_to_inspect
+        #TODO
+        # self.num_samples = num_samples
+        # self.trajectory_to_inspect = trajectory_to_inspect
         self.point_size = point_size
         self.ind = []
         for i in range(len(self.conditions_2)):
@@ -235,10 +236,10 @@ class Visualization (object):
     #     plt.title(self.study_title+', '+str(num_traj)+' trajectories were sampled')
     #     plt.show()
 
-    def examine_certain_trajectory(self, subject_id, trial):
+    def examine_certain_trajectory(self):
         """
         This function plot a specific trajectory along all its measures
-        :Param subject_id: int, subject number
-        :Param trial: int, trial number
         """
-        pass
+        if self.trajectory_to_inspect[0]:
+            pass
+

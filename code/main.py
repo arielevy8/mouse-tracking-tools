@@ -29,8 +29,10 @@ COLORMAP = 'rainbow'  # Other common options: RdYlGn, viridis
 
 # Parameters for additional visualization options
 SUBJECT_TO_INSPECT = 6  # Integer, subject ID to plot. If 0, will not plot specific subject.
-NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will not plot sample trajectory
-TRAJECTORY_TO_INSPECT = []
+
+#TODO
+# NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will not plot sample trajectory
+# TRAJECTORY_TO_INSPECT = [6, 13]  # list, where first value is subject number and second value is trial number
 
 # Alternative usage
 PREPROCESS = True  # Change to False if the data is already processed, and you only want to do visualization
@@ -55,9 +57,12 @@ if __name__ == "__main__":
                         STUDY_TITLE,
                         FIRST_CONDITION_COLUMN, SECOND_CONDITION_COLUMN,
                         TITLE_SIZE, LABELS_SIZE, TICKS_SIZE , LEGEND_SIZE, POINT_SIZE,COLORMAP,
-                        SUBJECT_TO_INSPECT, NUM_SAMPLES, TRAJECTORY_TO_INSPECT)
+                        SUBJECT_TO_INSPECT)
     viz.plot_means()  # plots the mean of the experiment
     viz.plot_subject()  # plots all trajectories of the subject defined for inspection
+
+    #TODO
+    # viz.examine_certain_trajectory()
     # viz.plot_trajectories_sample(5)  # plots randomly sampled 5 trajectories for each condition
     # viz.plot_subject_mean(3)  # plots the mean trajectories of subject 3
 

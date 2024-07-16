@@ -49,7 +49,6 @@ class Preprocessing(object):
         if not self.isOK:
             print('This participant did not provide mouse-data, and thus can not be processed.' +
                   'This might be because he completed the experiment without using a mouse')
-        print(self.x.shape)
 
     def normalize_time_points(self):
         """
