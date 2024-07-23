@@ -15,8 +15,8 @@ NUM_TRIALS = 42  # Required, number of experimental trials.
 # Set column names
 X_CORD_COLUMN = 'x_cord'  # The name of the column of x coordinates
 Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
-FIRST_CONDITION_COLUMN = 'Conflict'  # Optional, name of the column describe the experimental factor
-SECOND_CONDITION_COLUMN = 'TaskType'  # Optional, name of the column describe an experimental condition of second order
+FIRST_CONDITION_COLUMN = 'Condition'  # Optional, name of the column describe the experimental factor
+SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
 
 # Use the following option to change the default sorting of the condition within each factor.
 # Write the indices of the condition in desired order. For example: [1,0,2]. If you use fewer indices
@@ -34,14 +34,14 @@ POINT_SIZE = 4
 COLORMAP = 'rainbow'  # Other common options: RdYlGn, viridis
 
 # Parameters for additional visualization options
-SUBJECT_TO_INSPECT = 6  # Integer, subject ID to plot. If 0, will not plot specific subject.
+SUBJECT_TO_INSPECT = 1  # Integer, subject ID to plot. If 0, will not plot specific subject.
 
 #TODO
 # NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will not plot sample trajectory
 # TRAJECTORY_TO_INSPECT = [6, 13]  # list, where first value is subject number and second value is trial number
 
 # Alternative usage
-PREPROCESS = False  # Change to False if the data is already processed, and you only want to do visualization
+PREPROCESS = True  # Change to False if the data is already processed, and you only want to do visualization
 ALTERNATIVE_VIS_PATH = ''  # add file path if you want to visualize different file other than what was preprocessed
 
 if __name__ == "__main__":
