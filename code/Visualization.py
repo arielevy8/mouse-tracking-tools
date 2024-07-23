@@ -12,7 +12,8 @@ class Visualization (object):
     :Param study_title: string, will be used as the title of the plot
     :Param subjects_to_remove: list of subject numbers to remove from the plot
     """
-    def __init__(self, path, output_directory, study_title, first_condition_column, second_condition_column,
+    def __init__(self, path, output_directory, study_title, first_condition_column, first_condition_order,
+                 second_condition_column, second_condition_order,
                  title_size, labels_size,ticks_size, legend_size, point_size, colormap,
                  subject_to_inspect, subjects_to_remove =[]):
         self.output_directory = output_directory
@@ -33,10 +34,18 @@ class Visualization (object):
         self.second_condition_column = second_condition_column
         if first_condition_column:
             self.conditions_1 = self.df[first_condition_column].unique()
+            if first_condition_order:
+                self.conditions_1 = self.conditions_1[first_condition_order]
+            elif not any([type(i) == str for i in self.conditions_1]):
+                self.conditions_1 = np.sort(self.conditions_1)
         else:
             self.conditions_1 = [0]
         if second_condition_column:
             self.conditions_2 = self.df[self.second_condition_column].unique()
+            if second_condition_order:
+                self.conditions_2 = self.conditions_2[second_condition_order]
+            elif not any([type(i) == str for i in self.conditions_2]):
+                self.conditions_2 = np.sort(self.conditions_2)
         else:
             self.conditions_2 = [0]
         self.title_size = title_size
@@ -142,8 +151,8 @@ class Visualization (object):
                 ax.set_xlabel('X-coordinate', fontsize=self.labels_size)
                 ax.set_ylabel('Y-coordinate', fontsize=self.labels_size)
                 if self.second_condition_column:
-                    ax.set_title(('Subject: '+str(self.subject_to_inspect)+', Condition: '+cond_2),
-                                 fontsize=self.title_size)
+                    ax.set_title(('Subject: '+str(self.subject_to_inspect)+', ' + self.second_condition_column+': '
+                                  + str(cond_2)),  fontsize=self.title_size)
                 else:
                     ax.set_title(('Subject: '+str(self.subject_to_inspect)), fontsize=self.title_size)
             plt.savefig(self.output_directory+os.sep+'Subject '+str(self.subject_to_inspect)+' trajectories',
