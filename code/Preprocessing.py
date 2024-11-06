@@ -7,19 +7,25 @@ import math
 
 class Preprocessing(object):
     """
-    This class gets csv path for a single subject in the experiment, 
+    This class gets csv path for a single subject in the experiment,
     and contain of functions that handle with the preprocessing of the mouse-trajectory data
     and with the extraction of the trajectory-based measures
     :Param num_practice_trials:int, number of practice trials (trials with mouse tracking data that are
     to be ignored in the analysis)
     :Param num_trials: int, number of non-practice trials to analyze
     """
+    normalized_x = 1
+    normalized_y = 1.5
     def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column):
         self.isOK = True
+        self.normalized_x = 1
+        self.normalized_y = 1.5
+        self.min_length = math.sqrt( self.normalized_x ** 2 + self.normalized_y ** 2)
+        self.max_length = 0
         self.NUM_PRACTICE_TRIALS = num_practice_trials
         self.NUM_TRIALS = num_trials
         self.NUM_TIMEPOINTS = 100
-        self.df = pd.read_csv (path,index_col=None, header=0) 
+        self.df = pd.read_csv (path,index_col=None, header=0)
         self.df = self.df.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
         self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
         self.df = self.df.reset_index()
@@ -49,17 +55,17 @@ class Preprocessing(object):
         if not self.isOK:
             print('This participant did not provide mouse-data, and thus can not be processed.' +
                   'This might be because he completed the experiment without using a mouse')
-
+        
     def normalize_time_points(self):
         """
         This function uses linear interpolation to normalize all of the trajectories to 100 time points from start to finish.
-        """ 
+        """
         #innitialize matrix
-        xnew = np.empty([self.NUM_TIMEPOINTS,self.NUM_TRIALS]) 
+        xnew = np.empty([self.NUM_TIMEPOINTS,self.NUM_TRIALS])
         ynew = np.empty([self.NUM_TIMEPOINTS,self.NUM_TRIALS])
 
         for i in range (self.NUM_TRIALS): #run over trials
-            x_for_interp = self.x[:,i] 
+            x_for_interp = self.x[:,i]
             x_for_interp = x_for_interp[~np.isnan(x_for_interp)] #remove Nan values in the end of cordinates vectors
             y_for_interp = self.y[:,i]
             y_for_interp = y_for_interp[~np.isnan(y_for_interp)]
@@ -76,7 +82,8 @@ class Preprocessing(object):
     def rescale(self):
         """
         This function rescales the coordiantes space so that the continue button is in [0,0]
-        and the right and left targets are in [1,1.5] and [-1,1.5] respectively
+        and the right and left targets are where normalized_x (plus and minus) and normalized_y are.
+        default and recommended is - [1,1.5] and [-1,1.5] respectively
         """
 
         self.continue_x = np.mean(self.x[0,:])#calculating the x cordinates for the continue button
@@ -84,11 +91,11 @@ class Preprocessing(object):
         right_subset = self.x[:,self.x[self.NUM_TIMEPOINTS-1,:]>self.continue_x]
         self.right_x, self.left_x = np.mean(right_subset[-1,:]),np.mean(left_subset[-1,:])#calculating the x cordinates for the choices
         self.x -= self.continue_x #center x coordinates
-        self.x  = self.x / ((self.right_x-self.left_x)/2) #rescale x coordinates
+        self.x  = (self.x / ((self.right_x-self.left_x)/2))*self.normalized_x #rescale x coordinates
         self.continue_y =  np.mean(self.y[0,:])
         self.targets_y = np.mean(self.y[self.NUM_TIMEPOINTS-1,:])
         self.y -=self.continue_y
-        self.y = (-self.y / ((self.continue_y-self.targets_y)))*1.5
+        self.y = (-self.y / ((self.continue_y-self.targets_y)))*self.normalized_y
 
     def remap_trajectories(self):
         """
@@ -133,7 +140,7 @@ class Preprocessing(object):
             self.flips.append(x_count)
 
 
-    
+
     def get_RPB(self):
         """
         This funcction calculates the number of times the mouse cursor cross the middle of the X-axis
@@ -158,11 +165,11 @@ class Preprocessing(object):
         for i in range(self.NUM_TRIALS):
             cur_x = self.x[:, i]
             cur_y = self.y[:, i]
-            line_x, line_y = cur_x, 1.5*cur_x  # create a straight line from (0,0) to (1,1.5).
+            line_x, line_y = self.normalized_x*cur_x, self.normalized_y *cur_x  # create a straight line from (0,0) to the normalized location (default and recommended - 1,1.5).
             # integrate on the distance between the actual trajectory and a straight line
             cur_integral = np.trapz(cur_y-line_y, dx=1/self.NUM_TIMEPOINTS)
             self.AUC.append(cur_integral)
-            
+
             # #possibility - uncomment this section to visualize the integrated part and compare it to the calculated MD and AUC
 
             # print('AUC='+str(cur_integral))
@@ -172,10 +179,10 @@ class Preprocessing(object):
             # plt.fill_between(cur_x,cur_y,line_y,alpha = 0.4)
             # plt.ylim(0,1.7)
             # plt.show()
-            
+
     def get_max_deviation(self):
         """
-        This function calculates the maximal deviation from the actual trajectory to a 
+        This function calculates the maximal deviation from the actual trajectory to a
         straight line connecting the starting position and the target.
         IMPORTANT: this function will only work if you apply the rescale and remap functions first.
         """
@@ -214,7 +221,21 @@ class Preprocessing(object):
             # plt.plot([self.x[0,trial],self.x[point_of_angle,trial]],[self.y[0,trial],self.y[point_of_angle,trial]])
             # plt.title(angle)
             # plt.show()
-
+    def measure_trajectory_length(self):
+      """
+        This function measures the length of the trajectory course for each trial.
+        note that it essential to rescale the data before using this function!
+      """
+      self.length = []
+      for j in range (self.NUM_TRIALS):
+        length = 0
+        #every row is in size of the longest row where all the extra cells are nan
+        for i in range(len (self.x[j])-1):
+            #finish when the values become nan
+            if (np.isnan(self.x[i + 1,j])):
+              continue
+            length += math.sqrt((self.x[i, j] - self.x[i + 1,j]) ** 2 + (self.y[i, j] - self.y[i+1, j]) ** 2)
+        self.length.append(length)
     def calculate_all_measures(self):
         """
         This function calculates the measures (e,g. x flips, max deviation...)
@@ -233,6 +254,9 @@ class Preprocessing(object):
             self.get_initiation_angle()
             self.df['initiation_angle'] = self.initiation_angle
             self.df['initiation_correspondence'] = self.initiation_correspondence
+            self.measure_trajectory_length()
+            self.df['trajectory_length'] = self.length
+            self.df['min_length'] = np.full(self.df.shape[0], self.min_length)
         else:  # if data is not ok, fill all columns with nan
             self.df['flips'] = (np.full([self.df.shape[0]],np.nan))
             self.df['max_deviation'] = (np.full([self.df.shape[0]],np.nan))
@@ -240,8 +264,7 @@ class Preprocessing(object):
             self.df['AUC'] = (np.full([self.df.shape[0]],np.nan))
             self.df['initiation_angle'] = (np.full([self.df.shape[0]],np.nan))
             self.df['initiation_correspondence'] = (np.full([self.df.shape[0]],np.nan))
-
-
+            self.df['trajectory_length'] = (np.full([self.df.shape[0]],np.nan))
 
 # exmp = Preprocessing(r'C:\Users\ariel\Desktop\github mouse tracking\example_data\1.csv',4,42)
 # exmp.normalize_time_points()
