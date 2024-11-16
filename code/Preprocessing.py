@@ -230,10 +230,10 @@ class Preprocessing(object):
       for j in range (self.NUM_TRIALS):
         length = 0
         #every row is in size of the longest row where all the extra cells are nan
-        for i in range(len (self.x[j])-1):
+        for i in range(len (self.x[:,j])-1):
             #finish when the values become nan
-            if (np.isnan(self.x[i + 1,j])):
-              continue
+         #   if (np.isnan(self.x[i + 1,j])):
+         #     continue
             length += math.sqrt((self.x[i, j] - self.x[i + 1,j]) ** 2 + (self.y[i, j] - self.y[i+1, j]) ** 2)
         self.length.append(length)
     def calculate_all_measures(self):
@@ -266,8 +266,8 @@ class Preprocessing(object):
             self.df['initiation_correspondence'] = (np.full([self.df.shape[0]],np.nan))
             self.df['trajectory_length'] = (np.full([self.df.shape[0]],np.nan))
 
-# exmp = Preprocessing(r'C:\Users\ariel\Desktop\github mouse tracking\example_data\1.csv',4,42)
-# exmp.normalize_time_points()
+# exmp = Preprocessing(r'C:\Users\mhavi\shalevproject\mouse-tracking-tools-master\data\5a0c4184fe645f0001e9f5dd.csv',3,120,"x_cord","y_cord")
+# exmp.n ormalize_time_points()
 # exmp.rescale()
 # exmp.remap_trajectories()
 # exmp.plot_by_condition()
