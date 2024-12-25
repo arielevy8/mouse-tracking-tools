@@ -9,15 +9,25 @@ from process_across_subjects import process_across_subjects
 DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
+<<<<<<< HEAD
 NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
 NUM_TRIALS = 66  # Required, number of experimental trials.
+=======
+NUM_PRACTICE_TRIALS = 4  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
+NUM_TRIALS = 42  # Required, number of experimental trials.
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
 
 # Set column names
 X_CORD_COLUMN = 'x_cord'  # The name of the column of x coordinates
 Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
+<<<<<<< HEAD
 FIRST_CONDITION_COLUMN = 'trajectory'  # Optional, name of the column describe the experimental factor
 SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
 RESPONSE_COLUMN = 'response' #optional, name of the column with the difiiculty slider
+=======
+FIRST_CONDITION_COLUMN = 'Condition'  # Optional, name of the column describe the experimental factor
+SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
 
 # Use the following option to change the default sorting of the condition within each factor.
 # Write the indices of the condition in desired order. For example: [1,0,2]. If you use fewer indices
@@ -55,7 +65,11 @@ if __name__ == "__main__":
         output_directory = DIRECTORY
     if PREPROCESS:
         process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
+<<<<<<< HEAD
                                 X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
+=======
+                                X_CORD_COLUMN,Y_CORD_COLUMN)
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
     if ALTERNATIVE_VIS_PATH:
         vis_path = ALTERNATIVE_VIS_PATH
     else:

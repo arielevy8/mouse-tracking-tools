@@ -3,7 +3,11 @@ import pandas as pd
 import os
 from Preprocessing import Preprocessing
 from datetime import date
+<<<<<<< HEAD
 def process_across_subjects(data_directory,output_directory,num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column = ""):
+=======
+def process_across_subjects(data_directory,output_directory,num_practice_trials,num_trials,x_cord_column,y_cord_column):
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
     """
     This function receives a directory and apply the functions in the above class to all of
     the subjects files in the directory.
@@ -21,7 +25,11 @@ def process_across_subjects(data_directory,output_directory,num_practice_trials,
     for sub in range(len(files)):
         if files[sub][0:3] != 'all' and files[sub] != '.DS_Store':
             print("currently processing ", "subject :", sub_counter)
+<<<<<<< HEAD
             cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column)
+=======
+            cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials,x_cord_column,y_cord_column)
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
             # preprocess
             if cur_class.isOK:
                 cur_class.normalize_time_points()

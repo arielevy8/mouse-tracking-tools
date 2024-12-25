@@ -16,7 +16,11 @@ class Preprocessing(object):
     """
     normalized_x = 1
     normalized_y = 1.5
+<<<<<<< HEAD
     def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column = ""):
+=======
+    def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column):
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
         self.isOK = True
         self.normalized_x = 1
         self.normalized_y = 1.5
@@ -25,6 +29,7 @@ class Preprocessing(object):
         self.NUM_PRACTICE_TRIALS = num_practice_trials
         self.NUM_TRIALS = num_trials
         self.NUM_TIMEPOINTS = 100
+<<<<<<< HEAD
         csv = pd.read_csv (path,index_col=None, header=0)
         self.df = csv.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
         self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
@@ -33,6 +38,15 @@ class Preprocessing(object):
             self.df['explicit_slider'] = self.add_slider_data(csv,response_column)
         self.x = self.df[x_cord_column]
         self.y = self.df[y_cord_column]
+=======
+        self.df = pd.read_csv (path,index_col=None, header=0)
+        self.df = self.df.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
+        self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
+        self.df = self.df.reset_index()
+        self.x = self.df[x_cord_column]
+        self.y = self.df[y_cord_column]
+
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
         self.x = self.x.str.split(',', expand=True)
         self.x = self.x.reset_index(drop=True)
         self.x = self.x.to_numpy()  # convert to numpy matrix for future processing
@@ -56,6 +70,7 @@ class Preprocessing(object):
         if not self.isOK:
             print('This participant did not provide mouse-data, and thus can not be processed.' +
                   'This might be because he completed the experiment without using a mouse')
+<<<<<<< HEAD
     def add_slider_data (self, csv, response_column):
         """
         This function adds the slider information that comes after each trial to the data frame
@@ -67,6 +82,9 @@ class Preprocessing(object):
         response = [x/100 for x in response]
         return response
 
+=======
+        
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
     def normalize_time_points(self):
         """
         This function uses linear interpolation to normalize all of the trajectories to 100 time points from start to finish.
@@ -278,7 +296,11 @@ class Preprocessing(object):
             self.df['trajectory_length'] = (np.full([self.df.shape[0]],np.nan))
 
 # exmp = Preprocessing(r'C:\Users\mhavi\shalevproject\mouse-tracking-tools-master\data\5a0c4184fe645f0001e9f5dd.csv',3,120,"x_cord","y_cord")
+<<<<<<< HEAD
 # exmp.normalize_time_points()
+=======
+# exmp.n ormalize_time_points()
+>>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
 # exmp.rescale()
 # exmp.remap_trajectories()
 # exmp.plot_by_condition()
