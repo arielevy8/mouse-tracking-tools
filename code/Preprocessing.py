@@ -33,12 +33,6 @@ class Preprocessing(object):
             self.df['explicit_slider'] = self.add_slider_data(csv,response_column)
         self.x = self.df[x_cord_column]
         self.y = self.df[y_cord_column]
-        self.df = pd.read_csv (path,index_col=None, header=0)
-        self.df = self.df.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
-        self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
-        self.df = self.df.reset_index()
-        self.x = self.df[x_cord_column]
-        self.y = self.df[y_cord_column]
         self.x = self.x.str.split(',', expand=True)
         self.x = self.x.reset_index(drop=True)
         self.x = self.x.to_numpy()  # convert to numpy matrix for future processing
