@@ -3,19 +3,14 @@ import pandas as pd
 import os
 from Preprocessing import Preprocessing
 from datetime import date
-<<<<<<< HEAD
 def process_across_subjects(data_directory,output_directory,num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column = ""):
-=======
-def process_across_subjects(data_directory,output_directory,num_practice_trials,num_trials,x_cord_column,y_cord_column):
->>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
     """
-    This function receives a directory and apply the functions in the above class to all of
-    the subjects files in the directory.
+    This function receives a directory and apply the functions in the above class to all the subjects files in the directory.
     It also creates a unified CSV file of all subjects and saves it in the output directory.
-    :Param directory: directory of the data files.
-    :param num_practice_trials: int, number of practice trials (trials with mouse tracking data that are
+    Param directory: directory of the data files.
+    param num_practice_trials: int, number of practice trials (trials with mouse tracking data that are
     to be ignored in the analysis)
-    :Param num_triasl: int, number of non-practice trials to analyze
+    :Param num_trials: int, number of non-practice trials to analyze
     """
     df_list = []
     files = os.listdir(data_directory)
@@ -25,11 +20,7 @@ def process_across_subjects(data_directory,output_directory,num_practice_trials,
     for sub in range(len(files)):
         if files[sub][0:3] != 'all' and files[sub] != '.DS_Store':
             print("currently processing ", "subject :", sub_counter)
-<<<<<<< HEAD
             cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column)
-=======
-            cur_class = Preprocessing(data_directory + os.sep + files[sub],num_practice_trials,num_trials,x_cord_column,y_cord_column)
->>>>>>> 4400b0132f2e15a56261a9c54361f18345ff5f31
             # preprocess
             if cur_class.isOK:
                 cur_class.normalize_time_points()
