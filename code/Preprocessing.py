@@ -20,11 +20,10 @@ class Preprocessing(object):
         self.isOK = True
         self.normalized_x = 1
         self.normalized_y = 1.5
-        self.min_length = math.sqrt( self.normalized_x ** 2 + self.normalized_y ** 2)
         self.max_length = 0
         self.NUM_PRACTICE_TRIALS = num_practice_trials
         self.NUM_TRIALS = num_trials
-        self.NUM_TIMEPOINTS = 100
+        self.NUM_TIMEPOINTS = 101
         csv = pd.read_csv (path,index_col=None, header=0)
         self.df = csv.dropna(subset = [x_cord_column])  # read only lines with mouse tracking data
         self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
@@ -181,15 +180,15 @@ class Preprocessing(object):
             cur_integral = np.trapz(cur_y-line_y, dx=1/self.NUM_TIMEPOINTS)
             self.AUC.append(cur_integral)
 
-            # #possibility - uncomment this section to visualize the integrated part and compare it to the calculated MD and AUC
+            #possibility - uncomment this section to visualize the integrated part and compare it to the calculated MD and AUC
 
-            # print('AUC='+str(cur_integral))
-            # print('MD=' +str(self.max_deviations[i]))
-            # plt.plot(cur_x,cur_y,color = 'r')
-            # plt.plot(line_x,line_y)
-            # plt.fill_between(cur_x,cur_y,line_y,alpha = 0.4)
-            # plt.ylim(0,1.7)
-            # plt.show()
+            #print('AUC='+str(cur_integral))
+            #print('MD=' +str(self.max_deviations[i]))
+            #plt.plot(cur_x,cur_y,color = 'r')
+            #plt.plot(line_x,line_y)
+            #plt.fill_between(cur_x,cur_y,line_y,alpha = 0.4)
+            #plt.ylim(0,1.7)
+            #plt.show()
 
     def get_max_deviation(self):
         """
@@ -267,7 +266,16 @@ class Preprocessing(object):
             self.df['initiation_correspondence'] = self.initiation_correspondence
             self.measure_trajectory_length()
             self.df['trajectory_length'] = self.length
-            self.df['min_length'] = np.full(self.df.shape[0], self.min_length)
+            # Calculate the real minimum trajectory length for each trial
+            real_min_lengths = []
+            for i in range(self.NUM_TRIALS):
+                start_x = self.x[0, i]
+                start_y = self.y[0, i]
+                end_x = self.x[self.NUM_TIMEPOINTS-1, i]
+                end_y = self.y[self.NUM_TIMEPOINTS-1, i]
+                real_min_length = math.sqrt((end_x - start_x) ** 2 + (end_y - start_y) ** 2)
+                real_min_lengths.append(real_min_length)
+            self.df['real_min_length'] = real_min_lengths
         else:  # if data is not ok, fill all columns with nan
             self.df['flips'] = (np.full([self.df.shape[0]],np.nan))
             self.df['max_deviation'] = (np.full([self.df.shape[0]],np.nan))

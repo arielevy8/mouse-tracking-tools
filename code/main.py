@@ -6,7 +6,7 @@ from process_across_subjects import process_across_subjects
 # Define Global Variables
 
 # Set directory to be the parent directory of the current file
-DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Alternatively, define your own path
+DIRECTORY = r"THE/PATH/TO/YOUR/FOLDER" # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
 NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
@@ -18,7 +18,7 @@ X_CORD_COLUMN = 'x_cord'  # The name of the column of x coordinates
 Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
 FIRST_CONDITION_COLUMN = 'trajectory'  # Optional, name of the column describe the experimental factor
 SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
-RESPONSE_COLUMN = 'response' #optional, name of the column with the difficulty slider
+RESPONSE_COLUMN = '' #optional, name of the column with the difficulty slider
 
 
 # Use the following option to change the default sorting of the condition within each factor.
