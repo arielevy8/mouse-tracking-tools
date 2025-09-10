@@ -15,7 +15,7 @@ class Visualization (object):
     def __init__(self, path, output_directory, study_title, first_condition_column, first_condition_order,
                  second_condition_column, second_condition_order,
                  title_size, labels_size,ticks_size, legend_size, point_size, colormap,
-                 subject_to_inspect, subjects_to_remove =[]):
+                 subject_to_inspect, subjects_to_remove =[], condition_labels = {}):
         self.output_directory = output_directory
         self.NUM_TIMEPOINTS = 100
         self.df = pd.read_csv(path,index_col=None, header=0)
@@ -54,6 +54,7 @@ class Visualization (object):
         self.legend_size = legend_size
         self.colormap = colormap
         self.subject_to_inspect = subject_to_inspect
+        self.condition_labels = condition_labels
         #TODO
         # self.num_samples = num_samples
         # self.trajectory_to_inspect = trajectory_to_inspect
@@ -78,11 +79,40 @@ class Visualization (object):
                     cur_ind.append(self.df.index[(self.df['is_OK'] == True)])
             self.ind.append(cur_ind)
 
+    def _get_display_label(self, condition_value, condition_column):
+        """
+        Get the display label for a condition value, using custom labels if provided
+        """
+        if condition_column in self.condition_labels and condition_value in self.condition_labels[condition_column]:
+            return self.condition_labels[condition_column][condition_value]
+        return str(condition_value)
+
+    def _normalize_colors(self, colors):
+        """
+        Normalize RGB color values from 0-255 range to 0-1 range for matplotlib
+        """
+        if isinstance(colors, list):
+            normalized_colors = []
+            for color in colors:
+                if isinstance(color, tuple) and len(color) == 3:
+                    # Check if values are in 0-255 range (not already normalized)
+                    if all(0 <= val <= 255 for val in color):
+                        normalized_colors.append(tuple(val/255 for val in color))
+                    else:
+                        normalized_colors.append(color)  # Already normalized
+                else:
+                    normalized_colors.append(color)  # Not a tuple, keep as is
+            return normalized_colors
+        return colors
+
     def plot_means(self):
         """
         This function plot the average mouse trajectory in each condition.
         """
-        colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
+        if isinstance(self.colormap, list):
+            colors = self._normalize_colors(self.colormap)
+        else:
+            colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
         plt.figure(figsize=(6.4*len(self.conditions_2), 4.8))
         for i in range(len(self.conditions_2)):
             cond_2 = self.conditions_2[i]
@@ -98,10 +128,11 @@ class Visualization (object):
                 se_y = std_y/np.sqrt(self.num_subjects)
                 std_x = np.std(x, axis=1)
                 se_x = std_y/np.sqrt(self.num_subjects)
-                if type(cond_1)!= str:
-                    label = self.first_condition_column + ': ' + str(cond_1)
-                elif type(cond_1)==str:
-                    label = cond_1
+                if self.first_condition_column:
+                    display_label = self._get_display_label(cond_1, self.first_condition_column)
+                    label =  display_label
+                else:
+                    label = str(cond_1)
                 ax.plot(mean_x, mean_y, '--o', c=colors[j], label=label, markersize=self.point_size)
                 ax.fill_between(mean_x, mean_y-se_y, mean_y+se_y, color=colors[j], alpha=0.2,edgecolor = None)
                 ax.fill_betweenx(mean_y, mean_x-se_x, mean_x+se_x, color=colors[j], alpha=0.2,edgecolor = None)
@@ -126,7 +157,10 @@ class Visualization (object):
         """
         if self.subject_to_inspect:
             subject_ind = self.df.index[self.df['subject_id']==self.subject_to_inspect]
-            colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
+            if isinstance(self.colormap, list):
+                colors = self._normalize_colors(self.colormap)
+            else:
+                colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
             plt.figure(figsize=(6.4*len(self.conditions_2), 4.8))
             for i in range(len(self.conditions_2)):
                 cond_2 = self.conditions_2[i]
@@ -137,10 +171,11 @@ class Visualization (object):
                     sub_cur_ind = subject_ind.intersection(cur_ind)
                     x = self.x[:, sub_cur_ind]
                     y = self.y[:, sub_cur_ind]
-                    if type(cond_1) != str:
-                        label = self.first_condition_column+': ' +str(cond_1)
-                    elif type(cond_1) == str:
-                        label = cond_1
+                    if self.first_condition_column:
+                        display_label = self._get_display_label(cond_1, self.first_condition_column)
+                        label = display_label
+                    else:
+                        label = str(cond_1)
                     ax.plot(x, y, '--o', c=colors[j], label=label, markersize=self.point_size)
                     ax.tick_params(labelsize=self.ticks_size)
                 if self.first_condition_column:

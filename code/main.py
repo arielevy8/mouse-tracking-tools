@@ -6,7 +6,7 @@ from process_across_subjects import process_across_subjects
 # Define Global Variables
 
 # Set directory to be the parent directory of the current file
-DIRECTORY = r"THE/PATH/TO/YOUR/FOLDER" # Alternatively, define your own path
+DIRECTORY = "YOUR/PATH/TO/DATA" # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
 NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
@@ -20,7 +20,13 @@ FIRST_CONDITION_COLUMN = 'trajectory'  # Optional, name of the column describe t
 SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
 RESPONSE_COLUMN = '' #optional, name of the column with the difficulty slider
 
-
+# Custom labels for conditions (optional). If not provided, the condition values will be used as labels.
+CONDITION_LABELS = {
+    FIRST_CONDITION_COLUMN: {
+        'shown': 'Observable',
+        'hidden': 'Standard'
+    }
+}
 # Use the following option to change the default sorting of the condition within each factor.
 # Write the indices of the condition in desired order. For example: [1,0,2]. If you use fewer indices
 # than the number of conditions in the factor, It will subset only the stated conditions out of the dataset
@@ -34,10 +40,11 @@ LABELS_SIZE = 12
 TICKS_SIZE = 10
 LEGEND_SIZE = 12
 POINT_SIZE = 4
-COLORMAP = 'rainbow'  # Other common options: RdYlGn, viridis
+COLORMAP = [(205, 92, 92), (0, 206, 209)]  # Colors for different conditions (RGB values 0-255, will be normalized automatically)
 
 # Parameters for additional visualization options
 SUBJECT_TO_INSPECT = 1  # Integer, subject ID to plot. If 0, will not plot specific subject.
+
 
 #TODO
 # NUM_SAMPLES = 0  # Integer, number of sample trajectories to plot. If 0, will not plot sample trajectory
@@ -45,7 +52,7 @@ SUBJECT_TO_INSPECT = 1  # Integer, subject ID to plot. If 0, will not plot speci
 
 # Alternative usage
 PREPROCESS = True  # Change to False if the data is already processed, and you only want to do visualization
-ALTERNATIVE_VIS_PATH = ''  # add file path if you want to visualize different file other than what was preprocessed
+ALTERNATIVE_VIS_PATH = ''  # add file path if you want to visualize a different file other than what was preprocessed
 
 if __name__ == "__main__":
     # Process study:
@@ -55,9 +62,9 @@ if __name__ == "__main__":
     else:
         data_directory = DIRECTORY
         output_directory = DIRECTORY
-    if PREPROCESS:
-        process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
-                                X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
+    #if PREPROCESS:
+     #   process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
+      #                          X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
 
     if ALTERNATIVE_VIS_PATH:
         vis_path = ALTERNATIVE_VIS_PATH
@@ -67,7 +74,7 @@ if __name__ == "__main__":
                         STUDY_TITLE,
                         FIRST_CONDITION_COLUMN, FIRST_CONDITION_ORDER, SECOND_CONDITION_COLUMN, SECOND_CONDITION_ORDER,
                         TITLE_SIZE, LABELS_SIZE, TICKS_SIZE, LEGEND_SIZE, POINT_SIZE,COLORMAP,
-                        SUBJECT_TO_INSPECT)
+                        SUBJECT_TO_INSPECT, [], CONDITION_LABELS)
     viz.plot_means()  # plots the mean of the experiment
     viz.plot_subject()  # plots all trajectories of the subject defined for inspection
 
