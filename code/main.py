@@ -62,9 +62,9 @@ if __name__ == "__main__":
     else:
         data_directory = DIRECTORY
         output_directory = DIRECTORY
-    #if PREPROCESS:
-     #   process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
-      #                          X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
+    if PREPROCESS:
+        process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
+                                X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
 
     if ALTERNATIVE_VIS_PATH:
         vis_path = ALTERNATIVE_VIS_PATH
