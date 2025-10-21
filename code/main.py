@@ -6,7 +6,7 @@ from process_across_subjects import process_across_subjects
 # Define Global Variables
 
 # Set directory to be the parent directory of the current file
-DIRECTORY = "YOUR/PATH/TO/DATA" # Alternatively, define your own path
+DIRECTORY = "C:/Users/shale/Documents/psychology lab/test_data" # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
 NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
@@ -19,6 +19,10 @@ Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
 FIRST_CONDITION_COLUMN = 'trajectory'  # Optional, name of the column describe the experimental factor
 SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
 RESPONSE_COLUMN = '' #optional, name of the column with the difficulty slider
+
+# Columns to preserve even if they don't have trajectory data
+# These rows will have NaN for trajectory measures but keep their original data
+COLUMNS_TO_PRESERVE = ['response','confidence_bid']  # e.g., ['trial_type', 'response', 'rt', 'attention_check']
 
 # Custom labels for conditions (optional). If not provided, the condition values will be used as labels.
 CONDITION_LABELS = {
@@ -61,10 +65,11 @@ if __name__ == "__main__":
         output_directory = DIRECTORY+os.sep+'output'
     else:
         data_directory = DIRECTORY
-        output_directory = DIRECTORY
-    #if PREPROCESS:
-     #   process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
-      #                          X_CORD_COLUMN,Y_CORD_COLUMN, RESPONSE_COLUMN)
+        output_directory = os.path.dirname(DIRECTORY)  # Parent directory of data folder
+
+    if PREPROCESS:
+        process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
+                                X_CORD_COLUMN, Y_CORD_COLUMN, RESPONSE_COLUMN, COLUMNS_TO_PRESERVE)
 
     if ALTERNATIVE_VIS_PATH:
         vis_path = ALTERNATIVE_VIS_PATH

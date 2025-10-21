@@ -17,7 +17,7 @@ class Visualization (object):
                  title_size, labels_size,ticks_size, legend_size, point_size, colormap,
                  subject_to_inspect, subjects_to_remove =[], condition_labels = {}):
         self.output_directory = output_directory
-        self.NUM_TIMEPOINTS = 100
+        self.NUM_TIMEPOINTS = 101
         self.df = pd.read_csv(path,index_col=None, header=0)
         self.subjects_to_remove = subjects_to_remove
         self.df = self.df[~self.df['subject_id'].isin(self.subjects_to_remove)]
@@ -109,34 +109,54 @@ class Visualization (object):
         """
         This function plot the average mouse trajectory in each condition.
         """
+        # Count non-NaN conditions to determine number of colors needed
+        non_nan_conditions = [cond for cond in self.conditions_1 if not pd.isna(cond)]
+        num_colors_needed = len(non_nan_conditions)
+
         if isinstance(self.colormap, list):
-            colors = self._normalize_colors(self.colormap)
+            # If custom colors provided, use them (but limit to needed number)
+            colors = self._normalize_colors(self.colormap[:num_colors_needed] if len(self.colormap) > num_colors_needed else self.colormap)
         else:
-            colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
+            colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, num_colors_needed))
         plt.figure(figsize=(6.4*len(self.conditions_2), 4.8))
         for i in range(len(self.conditions_2)):
             cond_2 = self.conditions_2[i]
             ax = plt.subplot(1, len(self.conditions_2), i+1)
+            color_idx = 0  # Separate counter for colors to handle skipped NaN conditions
             for j in range(len(self.conditions_1)):
                 cond_1 = self.conditions_1[j]
                 cur_ind = self.ind[i][j]
+
+                # Skip NaN conditions (non-trajectory rows) as they have no data to plot
+                if pd.isna(cond_1) or len(cur_ind) == 0:
+                    continue
+
                 x = self.x[:,cur_ind]
                 y = self.y[:,cur_ind]
+                
+                # Filter out rows where all coordinates are NaN (non-trajectory rows)
+                valid_rows = ~(np.isnan(x).all(axis=0) | np.isnan(y).all(axis=0))
+                if valid_rows.sum() == 0:
+                    continue  # Skip if no valid trajectory data
+                
+                x = x[:, valid_rows]
+                y = y[:, valid_rows]
                 mean_x = np.mean(x, axis=1)
                 mean_y = np.mean(y, axis=1)
                 std_y = np.std(y, axis=1)
                 se_y = std_y/np.sqrt(self.num_subjects)
                 std_x = np.std(x, axis=1)
-                se_x = std_y/np.sqrt(self.num_subjects)
+                se_x = std_x/np.sqrt(self.num_subjects)
                 if self.first_condition_column:
                     display_label = self._get_display_label(cond_1, self.first_condition_column)
                     label =  display_label
                 else:
                     label = str(cond_1)
-                ax.plot(mean_x, mean_y, '--o', c=colors[j], label=label, markersize=self.point_size)
-                ax.fill_between(mean_x, mean_y-se_y, mean_y+se_y, color=colors[j], alpha=0.2,edgecolor = None)
-                ax.fill_betweenx(mean_y, mean_x-se_x, mean_x+se_x, color=colors[j], alpha=0.2,edgecolor = None)
+                ax.plot(mean_x, mean_y, '--o', c=colors[color_idx], label=label, markersize=self.point_size)
+                ax.fill_between(mean_x, mean_y-se_y, mean_y+se_y, color=colors[color_idx], alpha=0.2,edgecolor = None)
+                ax.fill_betweenx(mean_y, mean_x-se_x, mean_x+se_x, color=colors[color_idx], alpha=0.2,edgecolor = None)
                 ax.tick_params(labelsize=self.ticks_size)
+                color_idx += 1
             if self.first_condition_column:
                 ax.legend(fontsize=self.legend_size)
             ax.set_xlim(-1, 1.1)
@@ -157,27 +177,50 @@ class Visualization (object):
         """
         if self.subject_to_inspect:
             subject_ind = self.df.index[self.df['subject_id']==self.subject_to_inspect]
+
+            # Count non-NaN conditions to determine number of colors needed
+            non_nan_conditions = [cond for cond in self.conditions_1 if not pd.isna(cond)]
+            num_colors_needed = len(non_nan_conditions)
+
             if isinstance(self.colormap, list):
-                colors = self._normalize_colors(self.colormap)
+                # If custom colors provided, use them (but limit to needed number)
+                colors = self._normalize_colors(self.colormap[:num_colors_needed] if len(self.colormap) > num_colors_needed else self.colormap)
             else:
-                colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, len(self.conditions_1)))
+                colors = plt.cm.get_cmap(self.colormap)(np.linspace(0, 1, num_colors_needed))
+
             plt.figure(figsize=(6.4*len(self.conditions_2), 4.8))
             for i in range(len(self.conditions_2)):
                 cond_2 = self.conditions_2[i]
                 ax = plt.subplot(1, len(self.conditions_2), i+1)
+                color_idx = 0  # Separate counter for colors to handle skipped NaN conditions
                 for j in range(len(self.conditions_1)):
                     cond_1 = self.conditions_1[j]
                     cur_ind = self.ind[i][j]
                     sub_cur_ind = subject_ind.intersection(cur_ind)
+
+                    # Skip NaN conditions (non-trajectory rows) as they have no data to plot
+                    if pd.isna(cond_1) or len(sub_cur_ind) == 0:
+                        continue
+
                     x = self.x[:, sub_cur_ind]
                     y = self.y[:, sub_cur_ind]
+                    
+                    # Filter out rows where all coordinates are NaN (non-trajectory rows)
+                    valid_rows = ~(np.isnan(x).all(axis=0) | np.isnan(y).all(axis=0))
+                    if valid_rows.sum() == 0:
+                        continue  # Skip if no valid trajectory data
+                    
+                    x = x[:, valid_rows]
+                    y = y[:, valid_rows]
+                    
                     if self.first_condition_column:
                         display_label = self._get_display_label(cond_1, self.first_condition_column)
                         label = display_label
                     else:
                         label = str(cond_1)
-                    ax.plot(x, y, '--o', c=colors[j], label=label, markersize=self.point_size)
+                    ax.plot(x, y, '--o', c=colors[color_idx], label=label, markersize=self.point_size)
                     ax.tick_params(labelsize=self.ticks_size)
+                    color_idx += 1
                 if self.first_condition_column:
                     handles, labels = ax.get_legend_handles_labels()
                     temp = {k: v for k, v in zip(labels, handles)}
