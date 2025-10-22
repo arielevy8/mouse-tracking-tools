@@ -20,7 +20,10 @@ def process_across_subjects(data_directory,output_directory, x_cord_column,y_cor
     y_list = []
     sub_counter = 1
     for sub in range(len(files)):
-        if files[sub][0:3] != 'all' and files[sub] != '.DS_Store':
+        if (files[sub][0:3] != 'all' and 
+            files[sub] != '.DS_Store' and 
+            files[sub] != '.gitkeep' and 
+            files[sub].endswith('.csv')):
             print("currently processing ", "subject :",files[sub] )
             cur_class = Preprocessing(data_directory + os.sep + files[sub],x_cord_column,y_cord_column, response_column, columns_to_preserve)
             # preprocess

@@ -10,19 +10,14 @@ class Preprocessing(object):
     This class gets csv path for a single subject in the experiment,
     and contain of functions that handle with the preprocessing of the mouse-trajectory data
     and with the extraction of the trajectory-based measures
-    :Param num_practice_trials:int, number of practice trials (trials with mouse tracking data that are
-    to be ignored in the analysis)
-    :Param num_trials: int, number of non-practice trials to analyze
     """
     normalized_x = 1
     normalized_y = 1.5
-    def __init__(self,path,num_practice_trials,num_trials,x_cord_column,y_cord_column, response_column = "", columns_to_preserve = []):
+    def __init__(self,path,x_cord_column,y_cord_column, response_column = "", columns_to_preserve = []):
         self.isOK = True
         self.normalized_x = 1
         self.normalized_y = 1.5
         self.max_length = 0
-        self.NUM_PRACTICE_TRIALS = num_practice_trials
-        self.NUM_TRIALS = num_trials
         self.NUM_TIMEPOINTS = 101
         self.x_cord_column = x_cord_column
         self.y_cord_column = y_cord_column
