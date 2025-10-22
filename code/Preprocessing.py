@@ -27,7 +27,12 @@ class Preprocessing(object):
         self.x_cord_column = x_cord_column
         self.y_cord_column = y_cord_column
         csv = pd.read_csv (path,index_col=None, header=0)
-        
+        original_csv = csv.copy()  # Keep original for add_slider_data method
+
+        # Drop practice trials FIRST (before smart filtering) - filter by 'test_part' column
+        csv = csv[csv['test_part'] != 'practice'].reset_index(drop=True)
+
+
         # Smart filtering: keep rows with trajectory data OR rows with data in columns_to_preserve
         if columns_to_preserve:
             # Keep rows that have trajectory data OR have data in any of the preserve columns
@@ -38,15 +43,14 @@ class Preprocessing(object):
         else:
             # Default behavior: only keep rows with trajectory data
             self.df = csv.dropna(subset = [x_cord_column]).copy()
-        
-        self.df = self.df.iloc[self.NUM_PRACTICE_TRIALS:,]  # drop practice trials
+
         self.df = self.df.reset_index(drop=True)
         
         # Track which rows have trajectory data vs non-trajectory data
         self.trajectory_rows = self.df[x_cord_column].notna().values
         self.num_trajectory_rows = self.trajectory_rows.sum()
         if response_column != "": #  if there is response
-            self.df['explicit_slider'] = self.add_slider_data(csv,response_column)
+            self.df['explicit_slider'] = self.add_slider_data(original_csv,response_column)
         
         # Only process x/y coordinates for rows that have trajectory data
         trajectory_df = self.df[self.trajectory_rows]
@@ -88,9 +92,9 @@ class Preprocessing(object):
         This function adds the slider information that comes after each trial to the data frame
         """
         response = csv.dropna(subset=[response_column])
-        response = response['response']
-        response = response.dropna().tolist()
-        response = response[self.NUM_PRACTICE_TRIALS:]  # drop practice trials
+        # Filter out practice trials by 'test_part' column
+        response_df = response_df[response_df['test_part'] != 'practice']
+        response = response_df['response'].dropna().tolist()
         response = [x/100 for x in response]
         return response
 

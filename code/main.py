@@ -6,11 +6,11 @@ from process_across_subjects import process_across_subjects
 # Define Global Variables
 
 # Set directory to be the parent directory of the current file
-DIRECTORY = "C:/Users/shale/Documents/psychology lab/test_data" # Alternatively, define your own path
+DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Alternatively, define your own path
 
 # Set number of practice trials and number of experimental trials
-NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
-NUM_TRIALS = 66  # Required, number of experimental trials.
+#NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
+#NUM_TRIALS = 66  # Required, number of experimental trials.
 
 
 # Set column names
@@ -68,7 +68,7 @@ if __name__ == "__main__":
         output_directory = os.path.dirname(DIRECTORY)  # Parent directory of data folder
 
     if PREPROCESS:
-        process_across_subjects(data_directory, output_directory, NUM_PRACTICE_TRIALS, NUM_TRIALS,
+        process_across_subjects(data_directory, output_directory,
                                 X_CORD_COLUMN, Y_CORD_COLUMN, RESPONSE_COLUMN, COLUMNS_TO_PRESERVE)
 
     if ALTERNATIVE_VIS_PATH:
