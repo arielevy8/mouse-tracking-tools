@@ -25,7 +25,7 @@ class Preprocessing(object):
         original_csv = csv.copy()  # Keep original for add_slider_data method
 
         # Drop practice trials FIRST (before smart filtering) - filter by 'test_part' column
-        csv = csv[csv['test_part'] != 'practice'].reset_index(drop=True)
+        csv = csv[~csv['test_part'].str.startswith('practice', na=False)].reset_index(drop=True)
 
 
         # Smart filtering: keep rows with trajectory data OR rows with data in columns_to_preserve
@@ -88,7 +88,7 @@ class Preprocessing(object):
         """
         response = csv.dropna(subset=[response_column])
         # Filter out practice trials by 'test_part' column
-        response_df = response_df[response_df['test_part'] != 'practice']
+        response_df = response[~response['test_part'].str.startswith('practice', na=False)]
         response = response_df['response'].dropna().tolist()
         response = [x/100 for x in response]
         return response
