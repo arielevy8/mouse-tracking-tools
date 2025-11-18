@@ -21,11 +21,11 @@ X_CORD_COLUMN = 'x_cord'  # The name of the column of x coordinates
 Y_CORD_COLUMN = 'y_cord'  # The name of the column of y coordinates
 FIRST_CONDITION_COLUMN = 'trajectory'  # Optional, name of the column describe the experimental factor
 SECOND_CONDITION_COLUMN = ''  # Optional, name of the column describe an experimental condition of second order
-RESPONSE_COLUMN = '' #optional, name of the column with the difficulty slider
+RESPONSE_COLUMN = 'response' #optional, name of the column with the difficulty slider
 
 # Columns to preserve even if they don't have trajectory data
 # These rows will have NaN for trajectory measures but keep their original data
-COLUMNS_TO_PRESERVE = ['response']  # e.g., ['trial_type', 'response', 'rt', 'attention_check']
+COLUMNS_TO_PRESERVE = []  # e.g., ['trial_type', 'response', 'rt', 'attention_check']
 
 # Custom labels for conditions (optional). If not provided, the condition values will be used as labels.
 CONDITION_LABELS = {

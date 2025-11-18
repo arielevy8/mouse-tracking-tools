@@ -46,7 +46,7 @@ class Preprocessing(object):
         self.num_practice_trials = max(0, num_practice_trials or 0)
         self.num_trials = num_trials if num_trials and num_trials > 0 else None
         csv = pd.read_csv (path,index_col=None, header=0)
-        csv = self._drop_invalid_trials(csv)
+        #csv = self._drop_invalid_trials(csv)
         original_csv = csv.copy()  # Keep original for add_slider_data method
 
         csv = self._filter_practice_trials(csv).reset_index(drop=True)
