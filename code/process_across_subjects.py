@@ -3,16 +3,22 @@ import pandas as pd
 import os
 from Preprocessing import Preprocessing
 from datetime import date
-def process_across_subjects(data_directory,output_directory, x_cord_column,y_cord_column, response_column = "", columns_to_preserve = []):
+def process_across_subjects(data_directory,output_directory, x_cord_column,y_cord_column,
+                            response_column = "", columns_to_preserve = [],
+                            practice_mode='auto', num_practice_trials=0, num_trials=None):
     """
     This function receives a directory and apply the functions in the above class to all the subjects files in the directory.
     It also creates a unified CSV file of all subjects and saves it in the output directory.
-    Practice trials are automatically filtered out based on the 'test_part' column containing 'practice'.
+    Practice trials can be removed automatically via the 'test_part' column or manually via the
+    `num_practice_trials`/`num_trials` parameters.
     :Param data_directory: directory of the data files.
     :Param x_cord_column: column name containing x-coordinates
     :Param y_cord_column: column name containing y-coordinates
     :Param response_column: optional column name containing response data
     :Param columns_to_preserve: list, column names to check for preserving rows without trajectory data
+    :Param practice_mode: str, 'auto' or 'manual' (default 'auto')
+    :Param num_practice_trials: int, number of practice trials to drop when using manual mode
+    :Param num_trials: int | None, number of experimental trials to keep when using manual mode
     """
     df_list = []
     files = os.listdir(data_directory)
@@ -25,7 +31,16 @@ def process_across_subjects(data_directory,output_directory, x_cord_column,y_cor
             files[sub] != '.gitkeep' and 
             files[sub].endswith('.csv')):
             print("currently processing ", "subject :",files[sub] )
-            cur_class = Preprocessing(data_directory + os.sep + files[sub],x_cord_column,y_cord_column, response_column, columns_to_preserve)
+            cur_class = Preprocessing(
+                data_directory + os.sep + files[sub],
+                x_cord_column,
+                y_cord_column,
+                response_column,
+                columns_to_preserve,
+                practice_mode,
+                num_practice_trials,
+                num_trials
+            )
             # preprocess
             if cur_class.isOK:
                 cur_class.normalize_time_points()

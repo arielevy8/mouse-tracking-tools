@@ -8,12 +8,31 @@ import math
 class Preprocessing(object):
     """
     This class gets csv path for a single subject in the experiment,
-    and contain of functions that handle with the preprocessing of the mouse-trajectory data
-    and with the extraction of the trajectory-based measures
+    handles preprocessing of the mouse-trajectory data, and
+    extracts trajectory-based measures.
+
+    Parameters
+    ----------
+    path : str
+        Path to the subject CSV file.
+    x_cord_column / y_cord_column : str
+        Column names that contain the serialized x/y coordinates.
+    response_column : str, optional
+        Column that stores additional slider/response data to keep.
+    columns_to_preserve : list[str], optional
+        Columns that should be preserved even when the row has no trajectory data.
+    practice_mode : {'auto', 'manual'}
+        - 'auto'   → drop practice trials using the `test_part` column (default behaviour)
+        - 'manual' → drop practice trials using NUM_PRACTICE_TRIALS/NUM_TRIALS settings
+    num_practice_trials : int
+        Number of leading trajectory rows that should be discarded (manual mode only).
+    num_trials : int | None
+        Number of experimental trajectory rows to keep after discarding practice rows (manual mode only).
     """
     normalized_x = 1
     normalized_y = 1.5
-    def __init__(self,path,x_cord_column,y_cord_column, response_column = "", columns_to_preserve = []):
+    def __init__(self,path,x_cord_column,y_cord_column, response_column = "", columns_to_preserve = [],
+                 practice_mode='auto', num_practice_trials=0, num_trials=None):
         self.isOK = True
         self.normalized_x = 1
         self.normalized_y = 1.5
@@ -21,11 +40,16 @@ class Preprocessing(object):
         self.NUM_TIMEPOINTS = 101
         self.x_cord_column = x_cord_column
         self.y_cord_column = y_cord_column
+        self.practice_mode = practice_mode.lower() if isinstance(practice_mode, str) else 'auto'
+        if self.practice_mode not in ('auto', 'manual'):
+            self.practice_mode = 'auto'
+        self.num_practice_trials = max(0, num_practice_trials or 0)
+        self.num_trials = num_trials if num_trials and num_trials > 0 else None
         csv = pd.read_csv (path,index_col=None, header=0)
+        csv = self._drop_invalid_trials(csv)
         original_csv = csv.copy()  # Keep original for add_slider_data method
 
-        # Drop practice trials FIRST (before smart filtering) - filter by 'test_part' column
-        csv = csv[~csv['test_part'].str.startswith('practice', na=False)].reset_index(drop=True)
+        csv = self._filter_practice_trials(csv).reset_index(drop=True)
 
 
         # Smart filtering: keep rows with trajectory data OR rows with data in columns_to_preserve
@@ -63,6 +87,48 @@ class Preprocessing(object):
         self.y = self.y.astype(np.float64)
         self.y = np.transpose(self.y)
 
+    def _filter_practice_trials(self, csv):
+        """
+        Drop practice trials either automatically via the 'test_part' column
+        or manually via the NUM_PRACTICE_TRIALS/NUM_TRIALS settings.
+        """
+        if self.practice_mode == 'manual':
+            return self._drop_manual_practice_trials(csv)
+
+        if 'test_part' not in csv.columns:
+            return csv
+
+        return csv[~csv['test_part'].astype(str).str.startswith('practice', na=False)]
+
+    def _drop_invalid_trials(self, csv):
+        """
+        Remove rows where `trial_num` is negative (applies to all datasets).
+        """
+        if 'trial_num' not in csv.columns:
+            return csv
+
+        trial_nums = pd.to_numeric(csv['trial_num'], errors='coerce')
+        mask = (trial_nums.isna()) | (trial_nums >= 0)
+        return csv[mask].reset_index(drop=True)
+
+    def _drop_manual_practice_trials(self, csv):
+        """
+        Remove the leading practice trials (based on the number of valid trajectories)
+        and optionally cap the number of remaining experimental trials.
+        """
+        csv = csv.copy()
+        if self.num_practice_trials > 0:
+            trajectory_indices = csv[csv[self.x_cord_column].notna()].index
+            practice_indices = trajectory_indices[:self.num_practice_trials]
+            csv = csv.drop(index=practice_indices)
+
+        if self.num_trials:
+            trajectory_indices = csv[csv[self.x_cord_column].notna()].index
+            excess_indices = trajectory_indices[self.num_trials:]
+            csv = csv.drop(index=excess_indices)
+
+        return csv
+
     def get_coordinate_arrays(self):
         """
         Create full coordinate arrays matching the dataframe shape.
@@ -85,13 +151,23 @@ class Preprocessing(object):
     def add_slider_data (self, csv, response_column):
         """
         This function adds the slider information that comes after each trial to the data frame
+        while respecting the selected practice-handling mode.
         """
-        response = csv.dropna(subset=[response_column])
-        # Filter out practice trials by 'test_part' column
-        response_df = response[~response['test_part'].str.startswith('practice', na=False)]
-        response = response_df['response'].dropna().tolist()
-        response = [x/100 for x in response]
-        return response
+        response_df = csv.dropna(subset=[response_column])
+
+        if self.practice_mode == 'auto':
+            if 'test_part' in response_df.columns:
+                response_df = response_df[~response_df['test_part'].astype(str).str.startswith('practice', na=False)]
+        else:  # manual mode
+            responses = response_df[response_column].dropna().tolist()
+            if self.num_practice_trials > 0:
+                responses = responses[self.num_practice_trials:]
+            if self.num_trials:
+                responses = responses[:self.num_trials]
+            return [x/100 for x in responses]
+
+        responses = response_df[response_column].dropna().tolist()
+        return [x/100 for x in responses]
 
     def normalize_time_points(self):
         """

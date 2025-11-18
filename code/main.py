@@ -8,9 +8,12 @@ from process_across_subjects import process_across_subjects
 # Set directory to be the parent directory of the current file
 DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Alternatively, define your own path
 
-# Set number of practice trials and number of experimental trials
-#NUM_PRACTICE_TRIALS = 2  # First n trials for each subject, to be discarded . Could be 0 if there was no practice
-#NUM_TRIALS = 66  # Required, number of experimental trials.
+# Choose how to handle practice trials:
+# - 'auto'   → remove rows where 'test_part' starts with 'practice'
+# - 'manual' → remove the first NUM_PRACTICE_TRIALS trajectories and keep NUM_TRIALS
+PRACTICE_MODE = 'manual'
+NUM_PRACTICE_TRIALS = 2   # Only used when PRACTICE_MODE == 'manual'
+NUM_TRIALS = 66            # Only used when PRACTICE_MODE == 'manual'. 0 = keep all remaining trials
 
 
 # Set column names
@@ -22,7 +25,7 @@ RESPONSE_COLUMN = '' #optional, name of the column with the difficulty slider
 
 # Columns to preserve even if they don't have trajectory data
 # These rows will have NaN for trajectory measures but keep their original data
-COLUMNS_TO_PRESERVE = ['response','confidence_bid']  # e.g., ['trial_type', 'response', 'rt', 'attention_check']
+COLUMNS_TO_PRESERVE = ['response']  # e.g., ['trial_type', 'response', 'rt', 'attention_check']
 
 # Custom labels for conditions (optional). If not provided, the condition values will be used as labels.
 CONDITION_LABELS = {
@@ -69,7 +72,9 @@ if __name__ == "__main__":
 
     if PREPROCESS:
         process_across_subjects(data_directory, output_directory,
-                                X_CORD_COLUMN, Y_CORD_COLUMN, RESPONSE_COLUMN, COLUMNS_TO_PRESERVE)
+                                X_CORD_COLUMN, Y_CORD_COLUMN,
+                                RESPONSE_COLUMN, COLUMNS_TO_PRESERVE,
+                                PRACTICE_MODE, NUM_PRACTICE_TRIALS, NUM_TRIALS)
 
     if ALTERNATIVE_VIS_PATH:
         vis_path = ALTERNATIVE_VIS_PATH

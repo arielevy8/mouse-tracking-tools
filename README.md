@@ -44,7 +44,50 @@ Example plots made by this script can be found in the 'output' folder.
 
 #### main.py
 
-The main file, in which you can define global variables, such as column names and visualizations' design parameters, and run preprocessing and visualization.
+Use this file as the “control panel” for the entire toolkit. You do not need to modify the other Python files—just adjust the settings here and run the script.
+
+1. **Open your data folder**  
+   Place one CSV per participant inside `data/`. Each CSV must have the mouse-coordinate columns (see next step).
+
+2. **Tell the script how to read your columns**  
+   Set the names of your x/y coordinate columns and (optionally) condition columns:
+   ```python
+   X_CORD_COLUMN = 'x_cord'
+   Y_CORD_COLUMN = 'y_cord'
+   FIRST_CONDITION_COLUMN = 'trajectory'
+   SECOND_CONDITION_COLUMN = ''
+   ```
+   - Leave a column blank (`''`) if you do not collect that information.
+   - `COLUMNS_TO_PRESERVE` lets you keep non-trajectory rows (e.g., questionnaires) in the final CSV.
+
+3. **Handle practice trials**  
+   Choose how to drop practice trials:
+   ```python
+   PRACTICE_MODE = 'auto'    # removes rows whose test_part starts with “practice”
+   # or
+   PRACTICE_MODE = 'manual'
+   NUM_PRACTICE_TRIALS = 2   # number of practice trajectories to discard
+   NUM_TRIALS = 66           # number of experimental trajectories to keep
+   ```
+   - In manual mode, set both `NUM_PRACTICE_TRIALS` and `NUM_TRIALS` to match your task.
+   - Any row whose `trial_num` is below zero is removed automatically, so you do not have to clean those yourself.
+
+4. **Customize the plots (optional)**  
+   Update the visualization settings (titles, colors, fonts, subject to inspect). These only affect the charts saved to the `output/` folder.
+
+5. **Choose what to run**  
+   - `PREPROCESS = True` runs the full pipeline (process data + create plots).  
+   - Set `PREPROCESS = False` if you already have a processed CSV and only want to visualize it by pointing `ALTERNATIVE_VIS_PATH` to that file.
+
+6. **Run the script**  
+   From the project root:
+   ```bash
+   python3 code/main.py
+   ```
+   - The processed dataset is saved to `output/all_subjects_processed<DATE>.csv`.
+   - Plots such as “Average trajectories” and “Subject X trajectories” are also saved there.
+
+If something fails, double-check that the column names match exactly, that your CSV files contain mouse coordinates, and that the required Python packages from `requirements.txt` are installed.
 
 ### Output
 This folder includes example output files: preprocessed unified data file and visualization results.
